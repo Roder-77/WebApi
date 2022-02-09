@@ -8,23 +8,22 @@ namespace WebApi.Repositories
         /// <summary>
         /// 取得會員
         /// </summary>
-        /// <param name="id">會員代碼</param>
+        /// <param name="hasTracking">是否追蹤資料</param>
         /// <returns></returns>
-        Member? GetMember(int id);
+        IQueryable<Member> QueryMember(bool hasTracking = false);
 
         /// <summary>
-        /// 取得會員列表
+        /// 新增會員
         /// </summary>
-        /// <param name="skip">略過筆數</param>
-        /// <param name="take">取得筆數</param>
+        /// <param name="model">會員資料</param>
         /// <returns></returns>
-        IEnumerable<Member> GetMembers(int skip, int take);
+        Task InsertMember(MemberModel model);
 
         /// <summary>
         /// 更新會員
         /// </summary>
-        /// <param name="member">會員資料</param>
+        /// <param name="model">會員資料</param>
         /// <returns></returns>
-        Task UpdateMember(MemberModel model);
+        void UpdateMember(MemberModel model);
     }
 }

@@ -1,4 +1,5 @@
-﻿using WebApi.DataModel;
+﻿using Microsoft.EntityFrameworkCore;
+using WebApi.DataModel;
 using WebApi.Models;
 
 namespace WebApi.Repositories
@@ -13,25 +14,28 @@ namespace WebApi.Repositories
         }
 
         /// <summary>
-        /// 取得會員
+        /// 查詢會員
         /// </summary>
-        /// <param name="id">會員代碼</param>
+        /// <param name="hasTracking">是否追蹤資料</param>
         /// <returns></returns>
-        public Member? GetMember(int id) => _context.Member.FirstOrDefault(x => x.IsVerifyByMobile && x.Id == id);
+        public IQueryable<Member> QueryMember(bool hasTracking = false) => hasTracking ? _context.Member : _context.Member.AsNoTracking();
 
         /// <summary>
-        /// 取得會員列表
+        /// 新增會員
         /// </summary>
-        /// <param name="skip">略過筆數</param>
-        /// <param name="take">取得筆數</param>
+        /// <param name="model">會員資料</param>
         /// <returns></returns>
-        public IEnumerable<Member> GetMembers(int skip, int take)
+        public async Task InsertMember(MemberModel model)
         {
-            return _context.Member
-                .Where(x => x.IsVerifyByMobile)
-                .Skip(skip)
-                .Take(take)
-                .ToList();
+            _context.Member.Add(new Member
+            {
+                Name = model.Name,
+                Mobile = model.Mobile,
+                Email = model.Email,
+                IsVerifyByMobile = true
+            });
+
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -39,7 +43,7 @@ namespace WebApi.Repositories
         /// </summary>
         /// <param name="model">會員資料</param>
         /// <returns></returns>
-        public async Task UpdateMember(MemberModel model)
+        public void UpdateMember(MemberModel model)
         {
             var member = _context.Member
                 .FirstOrDefault(x => x.IsVerifyByMobile && x.Id == model.Id);
@@ -50,8 +54,6 @@ namespace WebApi.Repositories
             member.Name = model.Name;
             member.Mobile = model.Mobile;
             member.Email = model.Email;
-
-            await _context.SaveChangesAsync();
         }
     }
 }

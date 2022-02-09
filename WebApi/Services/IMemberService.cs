@@ -13,18 +13,25 @@ namespace WebApi.Services
         Member? GetMember(int id);
 
         /// <summary>
-        /// 取得會員列表
+        /// 新增會員
         /// </summary>
-        /// <param name="page">頁數</param>
-        /// <param name="quantity">數量</param>
+        /// <param name="member">會員資料</param>
         /// <returns></returns>
-        IEnumerable<Member> GetMembers(int page, int quantity);
+        Task InsertMember(MemberModel member);
 
         /// <summary>
         /// 更新會員
         /// </summary>
         /// <param name="member">會員資料</param>
         /// <returns></returns>
-        Task UpdateMember(MemberModel model);
+        void UpdateMember(MemberModel member);
+
+        /// <summary>
+        /// 取得會員列表
+        /// </summary>
+        /// <param name="page">頁數</param>
+        /// <param name="quantity">數量</param>
+        /// <returns></returns>
+        IEnumerable<Member> GetMembers(int page, int quantity);
     }
 }

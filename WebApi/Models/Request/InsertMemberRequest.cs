@@ -1,17 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApi.DataModel
+namespace WebApi.Models.Request
 {
-    public class Member
+    public class InsertMemberRequest
     {
-        /// <summary>
-        /// 會員代碼
-        /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-
         /// <summary>
         /// 會員名稱
         /// </summary>
@@ -29,13 +21,7 @@ namespace WebApi.DataModel
         /// <summary>
         /// 會員信箱
         /// </summary>
-        [Required]
         [StringLength(50)]
         public string Email { get; set; }
-
-        /// <summary>
-        /// 是否通過手機驗證
-        /// </summary>
-        public bool IsVerifyByMobile { get; set; }
     }
 }

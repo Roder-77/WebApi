@@ -46,6 +46,68 @@ namespace WebApi.Controllers
         }
 
         /// <summary>
+        /// 新增會員
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("/api/v1/member")]
+        public IActionResult InsertMember([FromBody] InsertMemberRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(m => m.Errors)
+                    .Select(e => e.ErrorMessage);
+
+                _logger.LogError(string.Join(", ", errors));
+
+                return BadRequest();
+            }
+
+            var model = new MemberModel
+            {
+                Name = request.Name,
+                Mobile = request.Mobile,
+                Email = request.Email
+            };
+
+            _service.InsertMember(model);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// 更新會員
+        /// </summary>
+        /// <param name="request">請求資料</param>
+        /// <returns></returns>
+        [HttpPut("/api/v1/member")]
+        public IActionResult UpdateMember([FromBody] UpdateMemberRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(m => m.Errors)
+                    .Select(e => e.ErrorMessage);
+
+                _logger.LogError(string.Join(", ", errors));
+
+                return BadRequest();
+            }
+
+            var model = new MemberModel
+            {
+                Id = request.Id,
+                Name = request.Name,
+                Mobile = request.Mobile,
+                Email = request.Email
+            };
+
+            _service.UpdateMember(model);
+
+            return Ok();
+        }
+
+        /// <summary>
         /// 取得會員列表
         /// </summary>
         /// <param name="request">請求資料</param>
@@ -71,31 +133,9 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            return Ok();
-        }
+            var result = members.Select(m => new MemberModel(m)).ToList();
 
-        /// <summary>
-        /// 更新會員
-        /// </summary>
-        /// <param name="request">請求資料</param>
-        /// <returns></returns>
-        [HttpPut("/api/v1/member")]
-        public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(m => m.Errors)
-                    .Select(e => e.ErrorMessage);
-
-                _logger.LogError(string.Join(", ", errors));
-
-                return BadRequest();
-            }
-
-            await _service.UpdateMember(request);
-
-            return Ok();
+            return Ok(result);
         }
     }
 }
