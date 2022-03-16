@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using WebApi.DataModel;
-using WebApi.Repositories;
-using WebApi.Services;
+using WebApi.Data;
+using WebApi.Extensions;
 using WebApi.Utils;
 
 try
@@ -17,10 +16,8 @@ try
         .CreateLogger();
 
     // services
-    builder.Services.AddTransient<IMemberService, MemberService>();
 
     // Repository
-    builder.Services.AddTransient<IMemberRepository, MemberRepository>();
 
     builder.Services.AddControllers(opt =>
     {
@@ -28,7 +25,10 @@ try
     });
 
     // DbContext
-    builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
+    builder.Services.AddDbContext<DataContext>(opt =>
+    {
+        opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
+    });
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
@@ -42,6 +42,8 @@ try
 
     var app = builder.Build();
 
+    app.ApplyDbMigration();
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -52,6 +54,8 @@ try
     app.UseExceptionHandler("/error");
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
 
     app.UseAuthorization();
 

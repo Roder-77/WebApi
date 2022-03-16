@@ -56,6 +56,16 @@
             是否通過手機驗證
             </summary>
         </member>
+        <member name="M:WebApi.Helpers.HashHelper.Generate(System.String,System.Byte[],System.Int32)">
+            <summary>
+            Generate a data hash
+            Algorithm support: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=net-6.0
+            </summary>
+            <param name="hashAlgorithm">Hash algorithm</param>
+            <param name="data">The data for calculating the hash</param>
+            <param name="trimByteCount">The number of bytes, which will be used in the hash algorithm; leave 0 to use all array</param>
+            <returns>Data hash</returns>
+        </member>
         <member name="P:WebApi.Models.PageModel.Page">
             <summary>
             當前頁數
