@@ -56,6 +56,24 @@
             是否通過手機驗證
             </summary>
         </member>
+        <member name="M:WebApi.Extensions.EnumExtension.GetName(System.Enum,System.Boolean)">
+            <summary>
+            Get Enum Name
+            </summary>
+            <param name="value">Enum</param>
+            <param name="isDescription">是否為描述</param>
+            <returns>Enum Name</returns>
+        </member>
+        <member name="M:WebApi.Helpers.CallApiHelper.CallAPI``2(System.Net.Http.HttpMethod,System.String,``0,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            呼叫 API
+            </summary>
+            <param name="httpMethod">http method</param>
+            <param name="requestUri">request uri</param>
+            <param name="body">body</param>
+            <param name="headers">headers</param>
+            <returns></returns>
+        </member>
         <member name="M:WebApi.Helpers.HashHelper.Generate(System.String,System.Byte[],System.Int32)">
             <summary>
             Generate a data hash
