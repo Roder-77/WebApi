@@ -1,15 +1,14 @@
 ﻿using WebApi.DataModel;
 using WebApi.Models;
-using WebApi.Models.Request;
 using WebApi.Repositories;
 
 namespace WebApi.Services
 {
     public class MemberService : IMemberService
     {
-        private readonly IMemberRepository _repository;
+        private readonly IGenericRepository<Member> _repository;
 
-        public MemberService(IMemberRepository repository)
+        public MemberService(IGenericRepository<Member> repository)
         {
             _repository = repository;
         }
@@ -19,7 +18,7 @@ namespace WebApi.Services
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        public Member? GetMember(int id) => _repository.QueryMember().FirstOrDefault(x => x.Id == id);
+        public Member? GetMember(int id) => _repository.GetById(id);
 
         /// <summary>
         /// 新增會員
@@ -28,7 +27,13 @@ namespace WebApi.Services
         /// <returns></returns>
         public async Task InsertMember(MemberModel member)
         {
-            await _repository.InsertMember(member);
+            await _repository.Insert(new Member
+            {
+                Name = member.Name,
+                Mobile = member.Mobile,
+                Email = member.Email,
+                IsVerifyByMobile = true
+            });
         }
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace WebApi.Services
         {
             var skip = (page - 1) * quantity;
 
-            return _repository.QueryMember()
+            return _repository.TableWithoutTracking
                 .Where(x => x.IsVerifyByMobile)
                 .Skip(skip)
                 .Take(quantity)
@@ -51,11 +56,19 @@ namespace WebApi.Services
         /// <summary>
         /// 更新會員
         /// </summary>
-        /// <param name="member">會員資料</param>
+        /// <param name="model">會員資料</param>
         /// <returns></returns>
-        public void UpdateMember(MemberModel member)
+        public void UpdateMember(MemberModel model)
         {
-            _repository.UpdateMember(member);
+            var member = _repository.Table
+               .FirstOrDefault(x => x.IsVerifyByMobile && x.Id == model.Id);
+
+            if (member == null)
+                throw new NullReferenceException();
+
+            member.Name = model.Name;
+            member.Mobile = model.Mobile;
+            member.Email = model.Email;
         }
     }
 }

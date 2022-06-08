@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Reflection;
 using WebApi.Data;
+using WebApi.DataModel;
 using WebApi.Extensions;
+using WebApi.Repositories;
+using WebApi.Services;
 using WebApi.Utils;
 
 try
@@ -17,9 +21,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // services
-
-    // Repository
+    builder.Services.AddDependencyInject();
 
     builder.Services.AddControllers(opt =>
     {
@@ -27,16 +29,18 @@ try
     });
 
     // DbContext
-    builder.Services.AddDbContext<DataContext>(opt =>
-    {
-        opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
-    });
+    builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
+    //builder.Services.AddDbContext<DataContext>(opt =>
+    //{
+    //    opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
+    //});
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen((opt) =>
     {
-        opt.IncludeXmlComments(builder.Configuration["XmlCommentPath"]);
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+        opt.IncludeXmlComments(xmlPath);
     });
 
     // Serilog
@@ -44,7 +48,7 @@ try
 
     var app = builder.Build();
 
-    app.ApplyDbMigration();
+    //app.ApplyDbMigration();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

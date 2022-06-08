@@ -1,17 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+
+#nullable disable
 
 namespace WebApi.DataModel
 {
-    public class Member
+    public class Member : BaseDataModel
     {
-        /// <summary>
-        /// 會員代碼
-        /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-
         /// <summary>
         /// 會員名稱
         /// </summary>

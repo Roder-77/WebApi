@@ -5,6 +5,7 @@ using WebApi.Services;
 
 namespace WebApi.Controllers
 {
+    [Route("api/v1")]
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _service;
@@ -21,7 +22,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        [HttpGet("/api/v1/member/{id}")]
+        [HttpGet("member/{id}")]
         public IActionResult GetMember([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -49,7 +50,7 @@ namespace WebApi.Controllers
         /// 新增會員
         /// </summary>
         /// <returns></returns>
-        [HttpPost("/api/v1/member")]
+        [HttpPost("member")]
         public IActionResult InsertMember([FromBody] InsertMemberRequest request)
         {
             if (!ModelState.IsValid)
@@ -80,7 +81,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="request">請求資料</param>
         /// <returns></returns>
-        [HttpPut("/api/v1/member")]
+        [HttpPut("member")]
         public IActionResult UpdateMember([FromBody] UpdateMemberRequest request)
         {
             if (!ModelState.IsValid)
@@ -112,7 +113,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="request">請求資料</param>
         /// <returns></returns>
-        [HttpPost("/api/v1/members")]
+        [HttpPost("members")]
         public IActionResult GetMembers([FromBody] GetMembersRequest request)
         {
             if (!ModelState.IsValid)
