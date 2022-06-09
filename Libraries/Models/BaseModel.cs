@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.Models
+namespace Models
 {
     public class PageModel
     {
@@ -14,6 +14,6 @@ namespace WebApi.Models
         /// 每頁數量
         /// </summary>
         [Required]
-        public int Quantity { get; set; }
+        public int PageSize { get; set; }
     }
 }

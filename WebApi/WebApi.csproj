@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -41,10 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Models\Cms\" />
-    <Folder Include="Enums\" />
-    <Folder Include="Repositories\" />
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\Libraries\Models\Models.csproj" />
+    <ProjectReference Include="..\Libraries\Services\Services.csproj" />
   </ItemGroup>
 
 </Project>

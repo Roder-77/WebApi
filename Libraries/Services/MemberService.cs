@@ -1,8 +1,9 @@
-﻿using WebApi.DataModel;
-using WebApi.Models;
-using WebApi.Repositories;
+﻿using Models;
+using Models.DataModels;
+using Services.Repositories;
+using static Models.Extensions.PaginationExtension;
 
-namespace WebApi.Services
+namespace Services
 {
     public class MemberService : IMemberService
     {
@@ -40,17 +41,15 @@ namespace WebApi.Services
         /// 取得會員列表
         /// </summary>
         /// <param name="page">頁數</param>
-        /// <param name="quantity">數量</param>
+        /// <param name="pageSize">數量</param>
         /// <returns></returns>
-        public IEnumerable<Member> GetMembers(int page, int quantity)
+        public PaginationList<Member> GetMembers(int page, int pageSize)
         {
-            var skip = (page - 1) * quantity;
+            var skip = (page - 1) * pageSize;
 
             return _repository.TableWithoutTracking
                 .Where(x => x.IsVerifyByMobile)
-                .Skip(skip)
-                .Take(quantity)
-                .ToList();
+                .ToPaginationList(page, pageSize);
         }
 
         /// <summary>
@@ -58,10 +57,9 @@ namespace WebApi.Services
         /// </summary>
         /// <param name="model">會員資料</param>
         /// <returns></returns>
-        public void UpdateMember(MemberModel model)
+        public async Task UpdateMember(MemberModel model)
         {
-            var member = _repository.Table
-               .FirstOrDefault(x => x.IsVerifyByMobile && x.Id == model.Id);
+            var member = _repository.GetById(model.Id, x => x.IsVerifyByMobile);
 
             if (member == null)
                 throw new NullReferenceException();
@@ -69,6 +67,8 @@ namespace WebApi.Services
             member.Name = model.Name;
             member.Mobile = model.Mobile;
             member.Email = model.Email;
+
+            await _repository.Update(member);
         }
     }
 }

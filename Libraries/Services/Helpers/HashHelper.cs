@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace WebApi.Helpers
+namespace Services.Helpers
 {
     public class HashHelper
     {

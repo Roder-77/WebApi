@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApi.Data;
+using Models.DataModels;
 
-namespace WebApi.Extensions
+namespace WebApi.Utils
 {
-    public static class ApplicationExtension
+    public static class ApplicationSettings
     {
         public static void ApplyDbMigration(this WebApplication app)
         {
@@ -12,6 +12,6 @@ namespace WebApi.Extensions
                 var db = scope.ServiceProvider.GetRequiredService<DataContext>();
                 db.Database.Migrate();
             }
-        } 
+        }
     }
 }

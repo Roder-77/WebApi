@@ -1,15 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApi.Data;
+using Models.DataModels;
+using Services;
+using Services.Repositories;
 
-namespace WebApi.Extensions
+namespace WebApi.Utils
 {
-    public static class ApplicationBuilderExtension
+    public static class ServiceSettings
     {
+        public static void RegisterDependency(this IServiceCollection services)
+        {
+            // services
+            services.AddScoped<IMemberService, MemberService>();
+
+            // Repository
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        }
+
         public static void UseDbContext(this WebApplicationBuilder builder)
         {
             var config = builder.Configuration;
 
-            builder.Services.AddDbContext<DataContext>(opt => {
+            builder.Services.AddDbContext<DataContext>(opt =>
+            {
                 if (config.HasConnectionString("SqlServer", out var sqlServerConnectionString))
                     opt.UseSqlServer(sqlServerConnectionString);
                 else if (config.HasConnectionString("MySQL", out var mySqlConnectionString))

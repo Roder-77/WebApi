@@ -1,27 +1,23 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Models.DataModels;
 using Serilog;
 using System.Reflection;
-using WebApi.Data;
-using WebApi.DataModel;
-using WebApi.Extensions;
-using WebApi.Repositories;
-using WebApi.Services;
 using WebApi.Utils;
 
 try
 {
+    var builder = WebApplication.CreateBuilder(args);
+
     Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Information()
-        .WriteTo.Console()
-        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+        .ReadFrom.Configuration(builder.Configuration)
         .CreateLogger();
 
     Log.Information("Starting web host");
 
-    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddHttpClient();
 
-    builder.Services.AddDependencyInject();
+    builder.Services.RegisterDependency();
 
     builder.Services.AddControllers(opt =>
     {
@@ -29,11 +25,8 @@ try
     });
 
     // DbContext
+    //builder.UseDbContext();
     builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
-    //builder.Services.AddDbContext<DataContext>(opt =>
-    //{
-    //    opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
-    //});
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();

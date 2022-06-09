@@ -1,7 +1,9 @@
-﻿using WebApi.DataModel;
-using WebApi.Models;
+﻿
+using Models;
+using Models.DataModels;
+using static Models.Extensions.PaginationExtension;
 
-namespace WebApi.Services
+namespace Services
 {
     public interface IMemberService
     {
@@ -24,7 +26,7 @@ namespace WebApi.Services
         /// </summary>
         /// <param name="member">會員資料</param>
         /// <returns></returns>
-        void UpdateMember(MemberModel member);
+        Task UpdateMember(MemberModel member);
 
         /// <summary>
         /// 取得會員列表
@@ -32,6 +34,6 @@ namespace WebApi.Services
         /// <param name="page">頁數</param>
         /// <param name="quantity">數量</param>
         /// <returns></returns>
-        IEnumerable<Member> GetMembers(int page, int quantity);
+        PaginationList<Member> GetMembers(int page, int quantity);
     }
 }

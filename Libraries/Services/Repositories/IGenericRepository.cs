@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApi.DataModel;
+using Models.DataModels;
+using System.Linq.Expressions;
 
-namespace WebApi.Repositories
+namespace Services.Repositories
 {
     public interface IGenericRepository<TEntity>
         where TEntity : BaseDataModel
@@ -10,7 +11,7 @@ namespace WebApi.Repositories
 
         IQueryable<TEntity> TableWithoutTracking { get; }
 
-        TEntity? GetById(int id, bool isTracking = false);
+        TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool isTracking = false);
 
         Task Insert(TEntity entity);
 

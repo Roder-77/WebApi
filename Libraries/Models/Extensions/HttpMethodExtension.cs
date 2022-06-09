@@ -1,4 +1,4 @@
-﻿namespace WebApi.Extensions
+﻿namespace Models.Extensions
 {
     public static class HttpMethodExtension
     {

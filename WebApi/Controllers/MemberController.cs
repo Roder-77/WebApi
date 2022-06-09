@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApi.Models;
-using WebApi.Models.Request;
-using WebApi.Services;
+using Models;
+using Models.Request;
+using Services;
 
 namespace WebApi.Controllers
 {
@@ -127,14 +127,7 @@ namespace WebApi.Controllers
                 return BadRequest();
             }
 
-            var members = _service.GetMembers(request.Page, request.Quantity);
-
-            if (!members.Any())
-            {
-                return NotFound();
-            }
-
-            var result = members.Select(m => new MemberModel(m)).ToList();
+            var result = _service.GetMembers(request.Page, request.PageSize);
 
             return Ok(result);
         }

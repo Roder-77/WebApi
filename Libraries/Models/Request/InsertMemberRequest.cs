@@ -2,9 +2,9 @@
 
 #nullable disable
 
-namespace WebApi.DataModel
+namespace Models.Request
 {
-    public class Member : BaseDataModel
+    public class InsertMemberRequest
     {
         /// <summary>
         /// 會員名稱
@@ -23,13 +23,7 @@ namespace WebApi.DataModel
         /// <summary>
         /// 會員信箱
         /// </summary>
-        [Required]
         [StringLength(50)]
         public string Email { get; set; }
-
-        /// <summary>
-        /// 是否通過手機驗證
-        /// </summary>
-        public bool IsVerifyByMobile { get; set; }
     }
 }

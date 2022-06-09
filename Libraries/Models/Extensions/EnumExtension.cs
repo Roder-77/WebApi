@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace WebApi.Extensions
+namespace Models.Extensions
 {
     public static class EnumExtension
     {

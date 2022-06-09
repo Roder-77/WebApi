@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Models.DataModels;
+using Models.Extensions;
 using System.Data;
-using WebApi.DataModel;
+using System.Linq.Expressions;
 
-namespace WebApi.Repositories
+namespace Services.Repositories
 {
     public class GenericRepository<TEntity> : IGenericRepository<TEntity>
         where TEntity : BaseDataModel
@@ -19,22 +21,39 @@ namespace WebApi.Repositories
         public DbSet<TEntity> Table => _context.Set<TEntity>();
         public IQueryable<TEntity> TableWithoutTracking => _context.Set<TEntity>().AsNoTracking();
 
-        public TEntity? GetById(int id, bool isTracking = false)
+        public TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool isTracking = false)
         {
             var query = Table.Where(x => x.Id == id);
 
-            if (isTracking) return query.FirstOrDefault();
+            if (predicate != null)
+                query = query.Where(predicate);
+
+            if (isTracking) 
+                return query.FirstOrDefault();
+
             return query.AsNoTracking().FirstOrDefault();
         }
 
         public async Task Insert(TEntity entity)
         {
+            if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(ICreateEntity).IsAssignableFrom(x)))
+            {
+                ((ICreateEntity)entity).CreateTime = DateTime.Now.ToTimestamp();
+                ((ICreateEntity)entity).Creator = "";
+            }
+
             Table.Add(entity);
             await _context.SaveChangesAsync();
         }
 
         public async Task Update(TEntity entity)
         {
+            if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(IUpdateEntity).IsAssignableFrom(x)))
+            {
+                ((IUpdateEntity)entity).UpdateTime = DateTime.Now.ToTimestamp();
+                ((IUpdateEntity)entity).Updater = "";
+            }
+
             Table.Update(entity);
             await _context.SaveChangesAsync();
         }

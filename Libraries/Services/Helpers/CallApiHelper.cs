@@ -1,19 +1,21 @@
-﻿using Serilog;
+﻿using Microsoft.Extensions.Logging;
+using Models.Extensions;
 using System.Text;
 using System.Text.Json;
-using WebApi.Extensions;
 
 #nullable disable
 
-namespace WebApi.Helpers
+namespace Service.Helpers
 {
     public class CallApiHelper
     {
-        private static readonly HttpClient client;
+        private readonly HttpClient _client;
+        private readonly ILogger<CallApiHelper> _logger;
 
-        static CallApiHelper()
+        public CallApiHelper(ILogger<CallApiHelper> logger, IHttpClientFactory clientFactory)
         {
-            client = new HttpClient();
+            _logger = logger;
+            _client = clientFactory.CreateClient(nameof(CallApiHelper));
         }
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace WebApi.Helpers
         /// <param name="body">body</param>
         /// <param name="headers">headers</param>
         /// <returns></returns>
-        public static async Task<TResponse> CallAPI<TRequest, TResponse>(HttpMethod httpMethod, string requestUri, TRequest body, Dictionary<string, string> headers = null)
+        public async Task<TResponse> CallAPI<TRequest, TResponse>(HttpMethod httpMethod, string requestUri, TRequest body, Dictionary<string, string> headers = null)
             where TRequest : class
             where TResponse : class
         {
@@ -44,7 +46,7 @@ namespace WebApi.Helpers
                         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     }
 
-                    var response = await client.SendAsync(request);
+                    var response = await _client.SendAsync(request);
                     var content = await response.Content.ReadAsStringAsync();
 
                     if (response.IsSuccessStatusCode)
@@ -58,7 +60,7 @@ namespace WebApi.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"{nameof(CallAPI)} fail, httpMethod: {httpMethod}, requestUri: {requestUri}, body: {JsonSerializer.Serialize(body)}");
+                _logger.LogError(ex, $"{nameof(CallAPI)} fail, httpMethod: {httpMethod}, requestUri: {requestUri}, body: {JsonSerializer.Serialize(body)}");
                 throw;
             }
         }
