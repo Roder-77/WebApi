@@ -2,21 +2,10 @@
 
 #nullable disable
 
-namespace Models
+namespace Models.ViewModel
 {
-    public class MemberModel
+    public class MemberVM
     {
-        public MemberModel()
-        { }
-
-        public MemberModel(Member member)
-        {
-            Id = member.Id;
-            Name = member.Name;
-            Mobile = member.Mobile;
-            Email = member.Email;
-        }
-
         /// <summary>
         /// 會員代碼
         /// </summary>

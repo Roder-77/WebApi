@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Models.DataModels;
 using Serilog;
 using System.Reflection;
+using WebApi.Filters;
+using WebApi.Middleware;
 using WebApi.Utils;
 
 try
@@ -15,13 +17,16 @@ try
 
     Log.Information("Starting web host");
 
-    builder.Services.AddHttpClient();
-
     builder.Services.RegisterDependency();
 
-    builder.Services.AddControllers(opt =>
+    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+    builder.Services.AddHttpClient();
+
+    builder.Services.AddControllers(config =>
     {
-        opt.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
+        config.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
+        config.Filters.Add(typeof(LogInvalidModelState));
     });
 
     // DbContext
@@ -43,6 +48,9 @@ try
 
     //app.ApplyDbMigration();
 
+    //if (app.Environment.IsDevelopment())
+    //    app.UseDeveloperExceptionPage();
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -50,7 +58,8 @@ try
         app.UseSwaggerUI();
     }
 
-    app.UseExceptionHandler("/error");
+    //app.UseExceptionHandler("/error");
+    app.UseMiddleware<LogApiInformation>();
 
     app.UseHttpsRedirection();
 

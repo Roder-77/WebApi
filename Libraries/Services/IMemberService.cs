@@ -1,6 +1,6 @@
-﻿
-using Models;
-using Models.DataModels;
+﻿using Models.DataModels;
+using Models.Request;
+using Models.ViewModel;
 using static Models.Extensions.PaginationExtension;
 
 namespace Services
@@ -12,21 +12,21 @@ namespace Services
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        Member? GetMember(int id);
+        MemberVM? GetMember(int id);
 
         /// <summary>
         /// 新增會員
         /// </summary>
         /// <param name="member">會員資料</param>
         /// <returns></returns>
-        Task InsertMember(MemberModel member);
+        Task InsertMember(InsertMemberRequest request);
 
         /// <summary>
         /// 更新會員
         /// </summary>
         /// <param name="member">會員資料</param>
         /// <returns></returns>
-        Task UpdateMember(MemberModel member);
+        Task UpdateMember(MemberVM member);
 
         /// <summary>
         /// 取得會員列表
@@ -34,6 +34,6 @@ namespace Services
         /// <param name="page">頁數</param>
         /// <param name="quantity">數量</param>
         /// <returns></returns>
-        PaginationList<Member> GetMembers(int page, int quantity);
+        PaginationList<MemberVM> GetMembers(int page, int quantity);
     }
 }

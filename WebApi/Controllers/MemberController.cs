@@ -1,20 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Models;
 using Models.Request;
+using Models.Response;
+using Models.ViewModel;
 using Services;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Net;
+using static Models.Extensions.PaginationExtension;
 
 namespace WebApi.Controllers
 {
     [Route("api/v1")]
-    public class MemberController : ControllerBase
+    public class MemberController : BaseController
     {
         private readonly IMemberService _service;
-        private readonly ILogger<MemberController> _logger;
 
-        public MemberController(IMemberService service, ILogger<MemberController> logger)
+        public MemberController(IMemberService service)
         {
             _service = service;
-            _logger = logger;
         }
 
         /// <summary>
@@ -23,27 +25,17 @@ namespace WebApi.Controllers
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
         [HttpGet("member/{id}")]
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<MemberVM>))]
         public IActionResult GetMember([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(m => m.Errors)
-                    .Select(e => e.ErrorMessage);
-
-                _logger.LogError(string.Join(", ", errors));
-
-                return BadRequest();
-            }
-
             var member = _service.GetMember(id);
 
             if (member == null)
-                return NotFound();
+                return NotFound(Response404);
 
-            var result = new MemberModel(member);
+            Response200.Data = member;
 
-            return Ok(result);
+            return Ok(Response200);
         }
 
         /// <summary>
@@ -51,29 +43,12 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("member")]
-        public IActionResult InsertMember([FromBody] InsertMemberRequest request)
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<object>))]
+        public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(m => m.Errors)
-                    .Select(e => e.ErrorMessage);
+            await _service.InsertMember(request);
 
-                _logger.LogError(string.Join(", ", errors));
-
-                return BadRequest();
-            }
-
-            var model = new MemberModel
-            {
-                Name = request.Name,
-                Mobile = request.Mobile,
-                Email = request.Email
-            };
-
-            _service.InsertMember(model);
-
-            return Ok();
+            return Ok(Response200);
         }
 
         /// <summary>
@@ -82,20 +57,10 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpPut("member")]
-        public IActionResult UpdateMember([FromBody] UpdateMemberRequest request)
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<object>))]
+        public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(m => m.Errors)
-                    .Select(e => e.ErrorMessage);
-
-                _logger.LogError(string.Join(", ", errors));
-
-                return BadRequest();
-            }
-
-            var model = new MemberModel
+            var model = new MemberVM
             {
                 Id = request.Id,
                 Name = request.Name,
@@ -103,9 +68,9 @@ namespace WebApi.Controllers
                 Email = request.Email
             };
 
-            _service.UpdateMember(model);
+            await _service.UpdateMember(model);
 
-            return Ok();
+            return Ok(Response200);
         }
 
         /// <summary>
@@ -113,23 +78,13 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="request">請求資料</param>
         /// <returns></returns>
-        [HttpPost("members")]
-        public IActionResult GetMembers([FromBody] GetMembersRequest request)
+        [HttpGet("members")]
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<PaginationList<MemberVM>>))]
+        public IActionResult GetMembers([FromQuery] GetMembersRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(m => m.Errors)
-                    .Select(e => e.ErrorMessage);
+            Response200.Data = _service.GetMembers(request.Page, request.PageSize);
 
-                _logger.LogError(string.Join(", ", errors));
-
-                return BadRequest();
-            }
-
-            var result = _service.GetMembers(request.Page, request.PageSize);
-
-            return Ok(result);
+            return Ok(Response200);
         }
     }
 }

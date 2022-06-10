@@ -1,4 +1,6 @@
-﻿namespace Models.Extensions
+﻿#nullable disable
+
+namespace Models.Extensions
 {
     public static class PaginationExtension
     {
@@ -38,7 +40,7 @@
 
             public bool HasNext => TotalPages - Page > 0;
 
-            public List<T> Items { get; set; } = null!;
+            public List<T> Items { get; set; }
         }
     }
 }
