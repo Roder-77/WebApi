@@ -31,15 +31,9 @@ try
 
     // DbContext
     //builder.UseDbContext();
-    builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
+    builder.Services.AddDbContext<MemoryContext>(option => option.UseInMemoryDatabase("MemoryDemo"));
 
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen((opt) =>
-    {
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
-        opt.IncludeXmlComments(xmlPath);
-    });
+    builder.Services.AddSwagger();
 
     // Serilog
     builder.WebHost.UseSerilog();
@@ -48,17 +42,16 @@ try
 
     //app.ApplyDbMigration();
 
-    //if (app.Environment.IsDevelopment())
-    //    app.UseDeveloperExceptionPage();
-
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(option =>
+        {
+            option.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        });
     }
 
-    //app.UseExceptionHandler("/error");
     app.UseMiddleware<LogApiInformation>();
 
     app.UseHttpsRedirection();
