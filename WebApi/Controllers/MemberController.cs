@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models.Request;
 using Models.Response;
-using Models.ViewModel;
+using Models.ViewModels;
 using Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;

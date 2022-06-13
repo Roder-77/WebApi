@@ -11,7 +11,7 @@ namespace Services.Repositories
 
         IQueryable<TEntity> TableWithoutTracking { get; }
 
-        TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool isTracking = false);
+        TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool hasTracking = false);
 
         Task Insert(TEntity entity);
 

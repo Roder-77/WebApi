@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Models.ViewModel
+namespace Models.ViewModels
 {
     public class MemberVM
     {

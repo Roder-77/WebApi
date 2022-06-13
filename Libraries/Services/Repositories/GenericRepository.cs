@@ -21,14 +21,14 @@ namespace Services.Repositories
         public DbSet<TEntity> Table => _context.Set<TEntity>();
         public IQueryable<TEntity> TableWithoutTracking => _context.Set<TEntity>().AsNoTracking();
 
-        public TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool isTracking = false)
+        public TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool hasTracking = false)
         {
             var query = Table.Where(x => x.Id == id);
 
             if (predicate != null)
                 query = query.Where(predicate);
 
-            if (isTracking) 
+            if (hasTracking) 
                 return query.FirstOrDefault();
 
             return query.AsNoTracking().FirstOrDefault();

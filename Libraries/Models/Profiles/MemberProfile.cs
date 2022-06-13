@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Models.DataModels;
 using Models.Request;
-using Models.ViewModel;
+using Models.ViewModels;
 using static Models.Extensions.PaginationExtension;
 
 namespace Models.Profiles

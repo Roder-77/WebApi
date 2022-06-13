@@ -43,18 +43,15 @@ try
     //app.ApplyDbMigration();
 
     // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
+    app.UseSwagger();
+    app.UseSwaggerUI(option =>
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(option =>
-        {
-            option.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        });
-    }
+        option.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    });
 
     app.UseMiddleware<LogApiInformation>();
 
-    app.UseHttpsRedirection();
+    //app.UseHttpsRedirection();
 
     app.UseAuthentication();
 
