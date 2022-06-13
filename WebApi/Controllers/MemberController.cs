@@ -9,7 +9,7 @@ using static Models.Extensions.PaginationExtension;
 
 namespace WebApi.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v{version:apiVersion}")]
     public class MemberController : BaseController
     {
         private readonly IMemberService _service;

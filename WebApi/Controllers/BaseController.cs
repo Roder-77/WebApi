@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Models.Response;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
 namespace WebApi.Controllers
 {
+    //[Authorize]
+    [ApiController]
     [Produces("application/json")]
     [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(Response<object>))]
     [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(Response<object>))]

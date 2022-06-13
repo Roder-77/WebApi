@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Models.DataModels;
@@ -17,11 +18,11 @@ try
 
     Log.Information("Starting web host");
 
+    builder.Services.AddHttpClient();
+
     builder.Services.RegisterDependency();
 
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-    builder.Services.AddHttpClient();
 
     builder.Services.AddControllers(config =>
     {
@@ -35,6 +36,8 @@ try
 
     builder.Services.AddSwagger();
 
+    builder.AddJwtVerification();
+
     // Serilog
     builder.WebHost.UseSerilog();
 
@@ -42,11 +45,19 @@ try
 
     //app.ApplyDbMigration();
 
+    app.UseApiVersioning();
+
     // Configure the HTTP request pipeline.
     app.UseSwagger();
     app.UseSwaggerUI(option =>
     {
-        option.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
+
+        foreach (var description in provider.ApiVersionDescriptions)
+        {
+            var url = $"/swagger/{description.GroupName}/swagger.json";
+            option.SwaggerEndpoint(url, description.GroupName.ToUpperInvariant());
+        }
     });
 
     app.UseMiddleware<LogApiInformation>();

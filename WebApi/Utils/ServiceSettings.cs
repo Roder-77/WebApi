@@ -1,9 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Models.DataModels;
 using Services;
+using Services.Helpers;
 using Services.Repositories;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text;
 
 namespace WebApi.Utils
 {
@@ -14,8 +22,12 @@ namespace WebApi.Utils
             // services
             services.AddScoped<IMemberService, MemberService>();
 
-            // Repository
+            // Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            // helpers
+            services.AddSingleton<JwtHelper>();
+            services.AddSingleton<CallApiHelper>();
         }
 
         public static void UseDbContext(this WebApplicationBuilder builder)
@@ -39,14 +51,32 @@ namespace WebApi.Utils
 
         public static void AddSwagger(this IServiceCollection services)
         {
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            services.AddApiVersioning(option =>
+            {
+                option.ReportApiVersions = true;
+                option.AssumeDefaultVersionWhenUnspecified = true;
+                option.DefaultApiVersion = new ApiVersion(1, 0);
+                option.ApiVersionReader = new UrlSegmentApiVersionReader();
+            });
+
+            services.AddVersionedApiExplorer(options =>
+            {
+                // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
+                // note: the specified format code will format the version as "'v'major[.minor][-status]"
+                options.GroupNameFormat = "'v'VVV";
+
+                // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
+                // can also be used to control the format of the API version in route templates
+                options.SubstituteApiVersionInUrl = true;
+            });
+
+            services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureApiVersionSwaggerGenOptions>();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen((option) =>
             {
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
 
                 option.IncludeXmlComments(xmlPath);
-                option.SwaggerDoc("v1", CresteOpenApiInfo("v1", "Web API"));
                 //option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 //{
                 //    Description = "JWT Authorization header using the Bearer scheme",
@@ -58,7 +88,7 @@ namespace WebApi.Utils
 
                 //option.AddSecurityRequirement(new OpenApiSecurityRequirement
                 //{
-                //    { 
+                //    {
                 //        new OpenApiSecurityScheme
                 //        {
                 //            Reference = new OpenApiReference() { Id = "Bearer", Type = ReferenceType.SecurityScheme }
@@ -68,17 +98,26 @@ namespace WebApi.Utils
             });
         }
 
-        public static OpenApiInfo CresteOpenApiInfo(string version, string title, string description = "")
+        public static void AddJwtVerification(this WebApplicationBuilder builder)
         {
-            return new OpenApiInfo()
-            {
-                Version = version,
-                Title = title,
-                Description = description,
-                //Contact = new OpenApiContact() { Name = "標題", Email = "", Url = null },
-                //TermsOfService = new Uri(""),
-                //License = new OpenApiLicense() { Name = "文件", Url = new Uri("") }
-            };
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.IncludeErrorDetails = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+                        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                        ValidateAudience = false,
+                        ValidateIssuerSigningKey = false,
+                        ValidateLifetime = true,
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration.GetValue<string>("JwtSettings:Issuer"),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JwtSettings:Key")))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
         }
     }
 }

@@ -5,17 +5,17 @@ using System.Text.Json;
 
 #nullable disable
 
-namespace Service.Helpers
+namespace Services.Helpers
 {
     public class CallApiHelper
     {
-        private readonly HttpClient _client;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<CallApiHelper> _logger;
 
-        public CallApiHelper(ILogger<CallApiHelper> logger, IHttpClientFactory clientFactory)
+        public CallApiHelper(ILogger<CallApiHelper> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
-            _client = clientFactory.CreateClient(nameof(CallApiHelper));
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -46,7 +46,8 @@ namespace Service.Helpers
                         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     }
 
-                    var response = await _client.SendAsync(request);
+                    var client = _httpClientFactory.CreateClient(nameof(CallAPI));
+                    var response = await client.SendAsync(request);
                     var content = await response.Content.ReadAsStringAsync();
 
                     if (response.IsSuccessStatusCode)
