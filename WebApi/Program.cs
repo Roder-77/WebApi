@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -24,11 +25,17 @@ try
 
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-    builder.Services.AddControllers(config =>
-    {
-        config.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
-        config.Filters.Add(typeof(LogInvalidModelState));
-    });
+    builder.Services
+        .AddControllers(config =>
+        {
+            config.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
+            config.Filters.Add(typeof(LogInvalidModelState));
+        })
+        .ConfigureApiBehaviorOptions(options =>
+        {
+            // Disable automatic 400 response
+            options.SuppressModelStateInvalidFilter = true;
+        });
 
     // DbContext
     //builder.UseDbContext();
