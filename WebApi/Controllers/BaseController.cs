@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Models.Response;
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel;
 using System.Net;
 
 namespace WebApi.Controllers
@@ -9,8 +10,8 @@ namespace WebApi.Controllers
     //[Authorize]
     [ApiController]
     [Produces("application/json")]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(Response<object>))]
-    [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(Response<object>))]
+    [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(DefaultResponse))]
+    [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(DefaultResponse))]
     public class BaseController : ControllerBase
     {
         public const string ok = "Success";
@@ -34,5 +35,12 @@ namespace WebApi.Controllers
             Code = 0,
             Message = "Internal server error",
         };
+
+        public class DefaultResponse : Response<object>
+        {
+            [DefaultValue(null)]
+            public override object Data { get; set; }
+        }
     }
+
 }

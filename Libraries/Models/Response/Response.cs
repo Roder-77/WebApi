@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+
 namespace Models.Response
 {
     public class Response<T>
@@ -8,6 +9,6 @@ namespace Models.Response
 
         public string Message { get; set; }
 
-        public T Data { get; set; }
+        public virtual T Data { get; set; }
     }
 }

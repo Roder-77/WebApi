@@ -43,7 +43,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("member")]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<object>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
         {
             await _service.InsertMember(request);
@@ -57,7 +57,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpPut("member")]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<object>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
             var model = new MemberVM
