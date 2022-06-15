@@ -60,15 +60,7 @@ namespace WebApi.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
-            var model = new MemberVM
-            {
-                Id = request.Id,
-                Name = request.Name,
-                Mobile = request.Mobile,
-                Email = request.Email
-            };
-
-            await _service.UpdateMember(model);
+            await _service.UpdateMember(request);
 
             return Ok(Response200);
         }

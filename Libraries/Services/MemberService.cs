@@ -61,18 +61,18 @@ namespace Services
         /// <summary>
         /// 更新會員
         /// </summary>
-        /// <param name="model">會員資料</param>
+        /// <param name="request">會員資料</param>
         /// <returns></returns>
-        public async Task UpdateMember(MemberVM model)
+        public async Task UpdateMember(UpdateMemberRequest request)
         {
-            var member = _repository.GetById(model.Id);
+            var member = _repository.GetById(request.Id);
 
             if (member == null)
                 throw new NullReferenceException();
 
-            member.Name = model.Name;
-            member.Mobile = model.Mobile;
-            member.Email = model.Email;
+            member.Name = request.Name;
+            member.Mobile = request.Mobile;
+            member.Email = request.Email;
 
             await _repository.Update(member);
         }

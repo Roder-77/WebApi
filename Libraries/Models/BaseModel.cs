@@ -11,7 +11,7 @@ namespace Models
         public int Page { get; set; } = 1;
 
         /// <summary>
-        /// 每頁數量
+        /// 每頁筆數
         /// </summary>
         [DefaultValue(20)]
         public int PageSize { get; set; } = 20;

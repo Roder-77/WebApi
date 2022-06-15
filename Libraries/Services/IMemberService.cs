@@ -24,9 +24,9 @@ namespace Services
         /// <summary>
         /// 更新會員
         /// </summary>
-        /// <param name="member">會員資料</param>
+        /// <param name="request">會員資料</param>
         /// <returns></returns>
-        Task UpdateMember(MemberVM member);
+        Task UpdateMember(UpdateMemberRequest request);
 
         /// <summary>
         /// 取得會員列表

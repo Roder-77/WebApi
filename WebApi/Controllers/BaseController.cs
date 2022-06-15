@@ -4,7 +4,6 @@ using Models.Response;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.Net;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace WebApi.Controllers

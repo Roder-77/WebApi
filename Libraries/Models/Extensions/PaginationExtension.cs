@@ -19,12 +19,24 @@ namespace Models.Extensions
 
         public class PaginationList<T> where T : class
         {
+            /// <summary>
+            /// 當前頁數
+            /// </summary>
             public int Page { get; set; }
 
+            /// <summary>
+            /// 每頁筆數
+            /// </summary>
             public int PageSize { get; set; }
 
+            /// <summary>
+            /// 總數量
+            /// </summary>
             public int TotalCount { get; set; }
 
+            /// <summary>
+            /// 總頁數
+            /// </summary>
             public int TotalPages
             {
                 get
@@ -38,8 +50,14 @@ namespace Models.Extensions
                 }
             }
 
+            /// <summary>
+            /// 是否有下一頁
+            /// </summary>
             public bool HasNext => TotalPages - Page > 0;
 
+            /// <summary>
+            /// 列表資料
+            /// </summary>
             public List<T> Items { get; set; }
         }
     }
