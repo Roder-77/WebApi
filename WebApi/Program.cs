@@ -26,10 +26,10 @@ try
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     builder.Services
-        .AddControllers(config =>
+        .AddControllers(options =>
         {
-            config.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
-            config.Filters.Add(typeof(LogInvalidModelState));
+            options.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
+            options.Filters.Add(typeof(LogInvalidModelState));
         })
         .ConfigureApiBehaviorOptions(options =>
         {
@@ -39,7 +39,7 @@ try
 
     // DbContext
     //builder.UseDbContext();
-    builder.Services.AddDbContext<MemoryContext>(option => option.UseInMemoryDatabase("MemoryDemo"));
+    builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
 
     builder.Services.AddSwagger();
 
@@ -56,14 +56,14 @@ try
 
     // Configure the HTTP request pipeline.
     app.UseSwagger();
-    app.UseSwaggerUI(option =>
+    app.UseSwaggerUI(options =>
     {
         var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
 
         foreach (var description in provider.ApiVersionDescriptions)
         {
             var url = $"/swagger/{description.GroupName}/swagger.json";
-            option.SwaggerEndpoint(url, description.GroupName.ToUpperInvariant());
+            options.SwaggerEndpoint(url, description.GroupName.ToUpperInvariant());
         }
     });
 

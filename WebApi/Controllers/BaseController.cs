@@ -4,14 +4,16 @@ using Models.Response;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.Net;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace WebApi.Controllers
 {
     //[Authorize]
     [ApiController]
     [Produces("application/json")]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(DefaultResponse))]
-    [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(DefaultResponse))]
+    [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(ErrorResponse))]
+    [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
     public class BaseController : ControllerBase
     {
         public const string ok = "Success";
@@ -38,8 +40,16 @@ namespace WebApi.Controllers
 
         public class DefaultResponse : Response<object>
         {
+            [DataMember(Order = 3)]
             [DefaultValue(null)]
             public override object Data { get; set; }
+        }
+
+        public class ErrorResponse : DefaultResponse
+        {
+            [DataMember(Order = 1)]
+            [DefaultValue(0)]
+            public override int Code { get; set; }
         }
     }
 

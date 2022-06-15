@@ -12,6 +12,7 @@ using Services.Repositories;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
+using WebApi.Filters;
 
 namespace WebApi.Utils
 {
@@ -34,12 +35,12 @@ namespace WebApi.Utils
         {
             var config = builder.Configuration;
 
-            builder.Services.AddDbContext<DataContext>(opt =>
+            builder.Services.AddDbContext<DataContext>(options =>
             {
                 if (config.HasConnectionString("SqlServer", out var sqlServerConnectionString))
-                    opt.UseSqlServer(sqlServerConnectionString);
+                    options.UseSqlServer(sqlServerConnectionString);
                 else if (config.HasConnectionString("MySQL", out var mySqlConnectionString))
-                    opt.UseMySql(mySqlConnectionString, new MySqlServerVersion(new Version(8, 0, 0)));
+                    options.UseMySql(mySqlConnectionString, new MySqlServerVersion(new Version(8, 0, 0)));
             });
         }
 
@@ -51,12 +52,12 @@ namespace WebApi.Utils
 
         public static void AddSwagger(this IServiceCollection services)
         {
-            services.AddApiVersioning(option =>
+            services.AddApiVersioning(options =>
             {
-                option.ReportApiVersions = true;
-                option.AssumeDefaultVersionWhenUnspecified = true;
-                option.DefaultApiVersion = new ApiVersion(1, 0);
-                option.ApiVersionReader = new UrlSegmentApiVersionReader();
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
             });
 
             services.AddVersionedApiExplorer(options =>
@@ -72,11 +73,11 @@ namespace WebApi.Utils
 
             services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureApiVersionSwaggerGenOptions>();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen((option) =>
+            services.AddSwaggerGen(options =>
             {
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
-
-                option.IncludeXmlComments(xmlPath);
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetAssembly(typeof(DataContext))!.GetName().Name}.xml"));
+                options.SchemaFilter<SwaggerSchemaSortProperty>();
                 //option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 //{
                 //    Description = "JWT Authorization header using the Bearer scheme",
