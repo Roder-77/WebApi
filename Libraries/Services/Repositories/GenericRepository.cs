@@ -34,38 +34,46 @@ namespace Services.Repositories
             return query.AsNoTracking().FirstOrDefault();
         }
 
-        public async Task Insert(TEntity entity)
+        public async Task Insert(TEntity entity, bool saveImmediately = true)
         {
             if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(ICreateEntity).IsAssignableFrom(x)))
             {
-                ((ICreateEntity)entity).CreateTime = DateTime.Now.ToTimestamp();
-                ((ICreateEntity)entity).Creator = "";
+                var createEntity = (ICreateEntity)entity;
+                createEntity.CreateTime = DateTime.Now.ToTimestamp();
+                createEntity.Creator = "";
             }
 
             Table.Add(entity);
-            await _context.SaveChangesAsync();
+
+            if (saveImmediately)
+                await _context.SaveChangesAsync();
         }
 
-        public async Task Update(TEntity entity)
+        public async Task Update(TEntity entity, bool saveImmediately = true)
         {
             if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(IUpdateEntity).IsAssignableFrom(x)))
             {
-                ((IUpdateEntity)entity).UpdateTime = DateTime.Now.ToTimestamp();
-                ((IUpdateEntity)entity).Updater = "";
+                var updateEntity = (IUpdateEntity)entity;
+                updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
+                updateEntity.Updater = "";
             }
 
             Table.Update(entity);
-            await _context.SaveChangesAsync();
+
+            if (saveImmediately)
+                await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteById(int id)
+        public async Task DeleteById(int id, bool saveImmediately = true)
         {
             var item = Table.FirstOrDefault(x => x.Id == id);
 
             if (item == null) return;
 
             Table.Remove(item);
-            await _context.SaveChangesAsync();
+
+            if (saveImmediately)
+                await _context.SaveChangesAsync();
         }
 
         public async Task<int> Execute(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
@@ -84,7 +92,7 @@ namespace Services.Repositories
             return await connection.QueryAsync<T>(sql, parameter, transaction, commandTimeout, commandType);
         }
 
-        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
+        public async Task<T> QueryFirstOrDefault<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
         {
             var connection = _context.Database.GetDbConnection();
             var transaction = _context.Database.CurrentTransaction?.GetDbTransaction();

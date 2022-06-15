@@ -13,10 +13,10 @@ namespace Services.Repositories
 
         TEntity? GetById(int id, Expression<Func<TEntity, bool>>? predicate = null, bool hasTracking = false);
 
-        Task Insert(TEntity entity);
+        Task Insert(TEntity entity, bool saveImmediately = true);
 
-        Task Update(TEntity entity);
+        Task Update(TEntity entity, bool saveImmediately = true);
 
-        Task DeleteById(int id);
+        Task DeleteById(int id, bool saveImmediately = true);
     }
 }

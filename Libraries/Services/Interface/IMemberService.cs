@@ -3,7 +3,7 @@ using Models.Request;
 using Models.ViewModels;
 using static Models.Extensions.PaginationExtension;
 
-namespace Services
+namespace Services.Interface
 {
     public interface IMemberService
     {

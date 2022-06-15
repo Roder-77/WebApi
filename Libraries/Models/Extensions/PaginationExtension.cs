@@ -17,6 +17,19 @@ namespace Models.Extensions
             };
         }
 
+        public static PaginationList<T> ToPaginationList<T>(this IQueryable<T> items, int page, int pageSize = 20) where T : class
+        {
+            var skip = (page - 1) * pageSize;
+
+            return new PaginationList<T>
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = items.Count(),
+                Items = items.Skip(skip).Take(pageSize).ToList(),
+            };
+        }
+
         public class PaginationList<T> where T : class
         {
             /// <summary>
@@ -51,9 +64,14 @@ namespace Models.Extensions
             }
 
             /// <summary>
+            /// 是否有上一頁
+            /// </summary>
+            public bool HasPrevious => Page > 1;
+
+            /// <summary>
             /// 是否有下一頁
             /// </summary>
-            public bool HasNext => TotalPages - Page > 0;
+            public bool HasNext => TotalPages > Page;
 
             /// <summary>
             /// 列表資料
