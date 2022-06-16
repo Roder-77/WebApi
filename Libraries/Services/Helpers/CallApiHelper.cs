@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Models.Extensions;
-using System;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -15,6 +15,16 @@ namespace Services.Helpers
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+        }
+
+        /// <summary>
+        /// 加入基本 headers
+        /// </summary>
+        /// <param name="headers"></param>
+        private void AddDefaultHeaders(HttpRequestHeaders headers)
+        {
+            headers.Add("Content-Type", "application/json");
+            headers.Add("Authorization", "");
         }
 
         /// <summary>
@@ -36,6 +46,8 @@ namespace Services.Helpers
 
                 if (headers != null)
                 {
+                    AddDefaultHeaders(request.Headers);
+
                     foreach (var header in headers)
                         request.Headers.Add(header.Key, header.Value);
                 }
@@ -67,6 +79,5 @@ namespace Services.Helpers
                 throw;
             }
         }
-
     }
 }

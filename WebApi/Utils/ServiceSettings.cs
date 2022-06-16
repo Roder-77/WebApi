@@ -14,6 +14,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
 using WebApi.Filters;
+using static Services.Interface.ISendMailService;
 
 namespace WebApi.Utils
 {
@@ -23,7 +24,16 @@ namespace WebApi.Utils
         {
             // services
             services.AddScoped<MemberService>();
-            services.AddScoped<ISendMailService, SendAwsMailService>();
+            services.AddScoped<SendAwsMailService>();
+
+            services.AddTransient<MailServiceResolver>(serviceProvider => type =>
+            {
+                return type switch
+                {
+                    MailServiceType.Aws => serviceProvider.GetService<SendAwsMailService>()!,
+                    _ => throw new NotSupportedException()
+                };
+            });
 
             // Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

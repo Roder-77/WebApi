@@ -34,7 +34,7 @@ namespace Services
             try
             {
                 if (!_mail.Aws.HasValue)
-                    throw new ArgumentException(GetArgumentEmptyMessage("Aws settings"));
+                    throw new ArgumentException(GetArgumentEmptyMessage("Aws ses settings"));
 
                 if (string.IsNullOrWhiteSpace(subject))
                     throw new ArgumentException(GetArgumentEmptyMessage(nameof(subject)));

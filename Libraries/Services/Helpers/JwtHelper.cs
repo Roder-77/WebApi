@@ -17,7 +17,14 @@ namespace Services.Helpers
             _jwtSettings = appsettings.Value.JwtSettings;
         }
 
-        public string GenerateToken(string userName, int expireMinutes = 30)
+        /// <summary>
+        /// 產生 Token
+        /// </summary>
+        /// <param name="userName">使用者名稱</param>
+        /// <param name="expireMinutes">幾分鐘後過期</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Jwt 相關設定未填</exception>
+        public string GenerateToken(string userName, int expireMinutes = 60)
         {
             var key = _jwtSettings.Key;
             var issuer = _jwtSettings.Issuer;

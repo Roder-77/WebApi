@@ -24,7 +24,7 @@ namespace WebApi.Utils
 
         private static OpenApiInfo CreateInfoForApiVersion(ApiVersionDescription description)
         {
-            var desc = string.Empty;
+            var desc = string.Empty; // costomize
 
             if (description.IsDeprecated)
                 desc += "(deprecated)";
