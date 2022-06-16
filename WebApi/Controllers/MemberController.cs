@@ -9,7 +9,7 @@ using static Models.Extensions.PaginationExtension;
 
 namespace WebApi.Controllers
 {
-    [Route("api/v{version:apiVersion}")]
+    [SwaggerTag("會員")]
     public class MemberController : BaseController
     {
         private readonly MemberService _service;
@@ -24,7 +24,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        [HttpGet("member/{id}")]
+        [HttpGet("{id}")]
         [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<MemberVM>))]
         public IActionResult GetMember([FromRoute] int id)
         {
@@ -42,7 +42,7 @@ namespace WebApi.Controllers
         /// 新增會員
         /// </summary>
         /// <returns></returns>
-        [HttpPost("member")]
+        [HttpPost]
         [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
         {
@@ -56,7 +56,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="request">請求資料</param>
         /// <returns></returns>
-        [HttpPut("member")]
+        [HttpPut]
         [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
@@ -70,7 +70,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <param name="request">請求資料</param>
         /// <returns></returns>
-        [HttpGet("members")]
+        [HttpGet]
         [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<PaginationList<MemberVM>>))]
         public IActionResult GetMembers([FromQuery] GetMembersRequest request)
         {

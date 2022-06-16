@@ -11,6 +11,7 @@ namespace WebApi.Controllers
     //[Authorize]
     [ApiController]
     [Produces("application/json")]
+    [Route("api/v{version:apiVersion}/[controller]s")]
     [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(ErrorResponse))]
     [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
     public class BaseController : ControllerBase

@@ -90,6 +90,7 @@ namespace WebApi.Utils
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetAssembly(typeof(DataContext))!.GetName().Name}.xml"));
                 options.SchemaFilter<SwaggerSchemaSortProperty>();
+                options.EnableAnnotations();
                 //option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 //{
                 //    Description = "JWT Authorization header using the Bearer scheme",
