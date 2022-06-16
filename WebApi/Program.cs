@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Models;
 using Models.DataModels;
 using Serilog;
 using System.Reflection;
@@ -18,6 +19,8 @@ try
         .CreateLogger();
 
     Log.Information("Starting web host");
+
+    builder.Services.Configure<Appsettings>(builder.Configuration);
 
     builder.Services.AddHttpClient();
 

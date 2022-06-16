@@ -2,7 +2,7 @@
 using Models.Request;
 using Models.Response;
 using Models.ViewModels;
-using Services.Interface;
+using Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 using static Models.Extensions.PaginationExtension;
@@ -12,9 +12,9 @@ namespace WebApi.Controllers
     [Route("api/v{version:apiVersion}")]
     public class MemberController : BaseController
     {
-        private readonly IMemberService _service;
+        private readonly MemberService _service;
 
-        public MemberController(IMemberService service)
+        public MemberController(MemberService service)
         {
             _service = service;
         }

@@ -22,7 +22,8 @@ namespace WebApi.Utils
         public static void RegisterDependency(this IServiceCollection services)
         {
             // services
-            services.AddScoped<IMemberService, MemberService>();
+            services.AddScoped<MemberService>();
+            services.AddScoped<ISendMailService, SendAwsMailService>();
 
             // Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

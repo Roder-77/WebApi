@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Models;
 using Models.Extensions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,20 +10,20 @@ namespace Services.Helpers
 {
     public class JwtHelper
     {
-        private readonly IConfiguration _configuration;
+        private readonly Jwtsettings _jwtSettings;
 
-        public JwtHelper(IConfiguration configuration)
+        public JwtHelper(IOptions<Appsettings> appsettings)
         {
-            _configuration = configuration;
+            _jwtSettings = appsettings.Value.JwtSettings;
         }
 
         public string GenerateToken(string userName, int expireMinutes = 30)
         {
-            var key = _configuration.GetSection("JwtSettings:Key").ToString();
-            var issuer = _configuration.GetSection("JwtSettings:Issuer").ToString();
+            var key = _jwtSettings.Key;
+            var issuer = _jwtSettings.Issuer;
 
             if (string.IsNullOrWhiteSpace(key) && string.IsNullOrWhiteSpace(issuer))
-                throw new NullReferenceException("Jwt settings unfilled");
+                throw new ArgumentException("Jwt settings is empty");
 
             var expireTime = DateTime.Now.AddMinutes(expireMinutes);
             var claims = new List<Claim>

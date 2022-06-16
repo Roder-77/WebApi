@@ -2,13 +2,12 @@
 using Models.DataModels;
 using Models.Request;
 using Models.ViewModels;
-using Services.Interface;
 using Services.Repositories;
 using static Models.Extensions.PaginationExtension;
 
 namespace Services
 {
-    public class MemberService : IMemberService
+    public class MemberService
     {
         private readonly IMapper _mapper;
         private readonly IGenericRepository<Member> _repository;

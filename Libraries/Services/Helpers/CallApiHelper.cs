@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Models.Extensions;
+using System;
 using System.Text;
 using System.Text.Json;
-
-#nullable disable
 
 namespace Services.Helpers
 {
@@ -26,42 +25,45 @@ namespace Services.Helpers
         /// <param name="body">body</param>
         /// <param name="headers">headers</param>
         /// <returns></returns>
-        public async Task<TResponse> CallAPI<TRequest, TResponse>(HttpMethod httpMethod, string requestUri, TRequest body, Dictionary<string, string> headers = null)
-            where TRequest : class
+        public async Task<(bool, TResponse?)> CallAPI<TResponse>(HttpMethod httpMethod, string requestUri, object? body = null, Dictionary<string, string>? headers = null)
             where TResponse : class
         {
+            var requestInfo = $"request httpMethod: {httpMethod}, requestUri: {requestUri}, body: {JsonSerializer.Serialize(body)}";
+
             try
             {
-                using (var request = new HttpRequestMessage(httpMethod, requestUri))
+                using var request = new HttpRequestMessage(httpMethod, requestUri);
+
+                if (headers != null)
                 {
-                    if (headers != null)
-                    {
-                        foreach (var header in headers)
-                            request.Headers.Add(header.Key, header.Value);
-                    }
-
-                    if (httpMethod.HasBody() && body != null)
-                    {
-                        var json = JsonSerializer.Serialize(body);
-                        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                    }
-
-                    var client = _httpClientFactory.CreateClient(nameof(CallAPI));
-                    var response = await client.SendAsync(request);
-                    var content = await response.Content.ReadAsStringAsync();
-
-                    if (response.IsSuccessStatusCode)
-                        return JsonSerializer.Deserialize<TResponse>(content);
-
-                    if (!string.IsNullOrEmpty(content))
-                        return JsonSerializer.Deserialize<TResponse>(content);
-
-                    return null;
+                    foreach (var header in headers)
+                        request.Headers.Add(header.Key, header.Value);
                 }
+
+                if (httpMethod.HasBody() && body != null)
+                {
+                    var json = JsonSerializer.Serialize(body);
+                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                }
+
+                var client = _httpClientFactory.CreateClient(nameof(CallAPI));
+                var response = await client.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseInfo = $"response statusCode: {(int)response.StatusCode}, content: {content}";
+                    _logger.LogError($"{nameof(CallAPI)} fail, {requestInfo}{Environment.NewLine}{responseInfo}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(content))
+                    return (response.IsSuccessStatusCode, JsonSerializer.Deserialize<TResponse>(content));
+
+                return (response.IsSuccessStatusCode, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{nameof(CallAPI)} fail, httpMethod: {httpMethod}, requestUri: {requestUri}, body: {JsonSerializer.Serialize(body)}");
+                _logger.LogError(ex, $"{nameof(CallAPI)} error, {requestInfo}");
                 throw;
             }
         }
