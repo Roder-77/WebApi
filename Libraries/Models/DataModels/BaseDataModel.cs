@@ -14,13 +14,13 @@ namespace Models.DataModels
     {
         public long CreateTime { get; set; }
 
-        public string Creator { get; set; }
+        public int Creator { get; set; }
     }
 
     public interface IUpdateEntity
     {
         public long UpdateTime { get; set; }
 
-        public string Updater { get; set; }
+        public int Updater { get; set; }
     }
 }

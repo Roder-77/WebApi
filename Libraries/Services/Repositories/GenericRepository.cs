@@ -36,11 +36,21 @@ namespace Services.Repositories
 
         public async Task Insert(TEntity entity, bool saveImmediately = true)
         {
-            if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(ICreateEntity).IsAssignableFrom(x)))
+            var entityType = typeof(TEntity);
+            var nowTime = DateTime.Now.ToTimestamp();
+
+            if (typeof(ICreateEntity).IsAssignableFrom(entityType))
             {
                 var createEntity = (ICreateEntity)entity;
-                createEntity.CreateTime = DateTime.Now.ToTimestamp();
-                createEntity.Creator = "";
+                createEntity.CreateTime = nowTime;
+                createEntity.Creator = default; // current user id
+            }
+
+            if (typeof(IUpdateEntity).IsAssignableFrom(entityType))
+            {
+                var updateEntity = (IUpdateEntity)entity;
+                updateEntity.UpdateTime = nowTime;
+                updateEntity.Updater = default; // current user id
             }
 
             Table.Add(entity);
@@ -51,11 +61,11 @@ namespace Services.Repositories
 
         public async Task Update(TEntity entity, bool saveImmediately = true)
         {
-            if (entity.GetType().GetInterfaces().Any(x => x.IsInterface && typeof(IUpdateEntity).IsAssignableFrom(x)))
+            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
             {
                 var updateEntity = (IUpdateEntity)entity;
                 updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-                updateEntity.Updater = "";
+                updateEntity.Updater = default; // current user id
             }
 
             Table.Update(entity);
