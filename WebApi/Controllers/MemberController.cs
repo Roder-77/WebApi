@@ -5,7 +5,7 @@ using Models.ViewModels;
 using Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
-using static Models.Extensions.PaginationExtension;
+using static Services.Extensions.PaginationExtension;
 
 namespace WebApi.Controllers
 {

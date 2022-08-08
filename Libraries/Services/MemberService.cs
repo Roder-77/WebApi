@@ -3,7 +3,7 @@ using Models.DataModels;
 using Models.Request;
 using Models.ViewModels;
 using Services.Repositories;
-using static Models.Extensions.PaginationExtension;
+using static Services.Extensions.PaginationExtension;
 
 namespace Services
 {

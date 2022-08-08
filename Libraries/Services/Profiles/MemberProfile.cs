@@ -2,9 +2,9 @@
 using Models.DataModels;
 using Models.Request;
 using Models.ViewModels;
-using static Models.Extensions.PaginationExtension;
+using static Services.Extensions.PaginationExtension;
 
-namespace Models.Profiles
+namespace Services.Profiles
 {
     public class MemberProfile : Profile
     {

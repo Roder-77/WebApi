@@ -1,6 +1,6 @@
 ﻿#nullable disable
 
-namespace Models.Extensions
+namespace Services.Extensions
 {
     public static class PaginationExtension
     {

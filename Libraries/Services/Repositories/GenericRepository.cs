@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Models.DataModels;
-using Models.Extensions;
+using Services.Extensions;
 using System.Data;
 using System.Linq.Expressions;
 

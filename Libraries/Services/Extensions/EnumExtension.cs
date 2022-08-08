@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Models.Extensions
+namespace Services.Extensions
 {
     public static class EnumExtension
     {
