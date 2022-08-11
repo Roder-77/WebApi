@@ -2,13 +2,16 @@
 
 namespace WebApi.Utils
 {
-    public class LowerCaseParameterTransformer : IOutboundParameterTransformer
+    public class CamelCaseParameterTransformer : IOutboundParameterTransformer
     {
         public string? TransformOutbound(object? value)
         {
-            if (value == null) return null;
+            if (value is null) return null;
 
-            return Regex.Replace(value.ToString(), "([a-z])([A-Z])", "$1-$2").ToLower();
+            var arr = Regex.Split(value.ToString()!, "(?<=[a-z])(?=[A-Z])");
+            arr[0] = arr[0].ToLower();
+
+            return string.Join("", arr);
         }
     }
 }

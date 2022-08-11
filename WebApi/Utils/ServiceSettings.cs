@@ -41,9 +41,12 @@ namespace WebApi.Utils
             // helpers
             services.AddSingleton<JwtHelper>();
             services.AddSingleton<CallApiHelper>();
+
+            // IHostedService
+            //services.AddHostedService<>();
         }
 
-        public static void UseDbContext(this WebApplicationBuilder builder)
+        public static void AddDbContext(this WebApplicationBuilder builder)
         {
             var config = builder.Configuration;
 
@@ -123,10 +126,10 @@ namespace WebApi.Utils
                         NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
                         RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
                         ValidateAudience = false,
-                        ValidateIssuerSigningKey = false,
                         ValidateLifetime = true,
                         ValidateIssuer = true,
                         ValidIssuer = builder.Configuration.GetValue<string>("JwtSettings:Issuer"),
+                        ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JwtSettings:Key")))
                     };
                 });

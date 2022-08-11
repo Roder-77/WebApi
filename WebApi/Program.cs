@@ -20,18 +20,18 @@ try
 
     Log.Information("Starting web host");
 
-    builder.Services.Configure<Appsettings>(builder.Configuration);
+    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     builder.Services.AddHttpClient();
 
-    builder.Services.RegisterDependency();
+    builder.Services.Configure<Appsettings>(builder.Configuration);
 
-    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    builder.Services.RegisterDependency();
 
     builder.Services
         .AddControllers(options =>
         {
-            options.Conventions.Add(new RouteTokenTransformerConvention(new LowerCaseParameterTransformer()));
+            options.Conventions.Add(new RouteTokenTransformerConvention(new CamelCaseParameterTransformer()));
             options.Filters.Add(typeof(LogInvalidModelState));
         })
         .ConfigureApiBehaviorOptions(options =>
@@ -41,7 +41,7 @@ try
         });
 
     // DbContext
-    //builder.UseDbContext();
+    //builder.AddDbContext();
     builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
 
     builder.Services.AddSwagger();
