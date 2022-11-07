@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Common.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models;
-using Services.Extensions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Services.Helpers
+namespace Services
 {
-    public class JwtHelper
+    public class JwtService
     {
         private readonly Jwtsettings _jwtSettings;
 
-        public JwtHelper(IOptions<Appsettings> appsettings)
+        public JwtService(IOptions<Appsettings> appsettings)
         {
             _jwtSettings = appsettings.Value.JwtSettings;
         }

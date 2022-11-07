@@ -4,7 +4,6 @@ using Models.Response;
 using Models.ViewModels;
 using Services;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Net;
 using static Services.Extensions.PaginationExtension;
 
 namespace WebApi.Controllers
@@ -25,10 +24,10 @@ namespace WebApi.Controllers
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<MemberVM>))]
-        public IActionResult GetMember([FromRoute] int id)
+        [SwaggerResponse(statusCode200, ok, typeof(Response<MemberVM>))]
+        public async Task<IActionResult> GetMember([FromRoute] int id)
         {
-            var member = _service.GetMember(id);
+            var member = await _service.GetMember(id);
 
             if (member == null)
                 return NotFound(Response404);
@@ -43,7 +42,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
+        [SwaggerResponse(statusCode200, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
         {
             await _service.InsertMember(request);
@@ -57,7 +56,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpPut]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(DefaultResponse))]
+        [SwaggerResponse(statusCode200, ok, typeof(DefaultResponse))]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
             await _service.UpdateMember(request);
@@ -71,10 +70,10 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpGet]
-        [SwaggerResponse((int)HttpStatusCode.OK, ok, typeof(Response<PaginationList<MemberVM>>))]
-        public IActionResult GetMembers([FromQuery] GetMembersRequest request)
+        [SwaggerResponse(statusCode200, ok, typeof(Response<PaginationList<MemberVM>>))]
+        public async Task<IActionResult> GetMembers([FromQuery] GetMembersRequest request)
         {
-            Response200.Data = _service.GetMembers(request.Page, request.PageSize);
+            Response200.Data = await _service.GetMembers(request.Page, request.PageSize);
 
             return Ok(Response200);
         }

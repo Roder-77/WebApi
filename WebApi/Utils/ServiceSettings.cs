@@ -4,17 +4,12 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Models.DataModels;
-using Services;
-using Services.Helpers;
-using Services.Interface;
-using Services.Repositories;
+using Services.Extensions;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
 using WebApi.Filters;
-using static Services.Interface.ISendMailService;
 
 namespace WebApi.Utils
 {
@@ -22,28 +17,11 @@ namespace WebApi.Utils
     {
         public static void RegisterDependency(this IServiceCollection services)
         {
-            // services
-            services.AddScoped<MemberService>();
-            services.AddScoped<SendAwsMailService>();
+            services.AddService();
+            services.AddRepository();
+            //services.AddHostedService();
 
-            services.AddTransient<MailServiceResolver>(serviceProvider => type =>
-            {
-                return type switch
-                {
-                    MailServiceType.Aws => serviceProvider.GetService<SendAwsMailService>()!,
-                    _ => throw new NotSupportedException()
-                };
-            });
-
-            // Repositories
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-            // helpers
-            services.AddSingleton<JwtHelper>();
-            services.AddSingleton<CallApiHelper>();
-
-            // IHostedService
-            //services.AddHostedService<>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         public static void AddDbContext(this WebApplicationBuilder builder)
@@ -56,6 +34,9 @@ namespace WebApi.Utils
                     options.UseSqlServer(sqlServerConnectionString);
                 else if (config.HasConnectionString("MySQL", out var mySqlConnectionString))
                     options.UseMySql(mySqlConnectionString, new MySqlServerVersion(new Version(8, 0, 0)));
+
+                if (builder.Environment.IsDevelopment())
+                    options.EnableSensitiveDataLogging();
             });
         }
 
@@ -90,16 +71,30 @@ namespace WebApi.Utils
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetAssembly(typeof(DataContext))!.GetName().Name}.xml"));
+                var xmlFiles = new List<string>
+                {
+                    $"{Assembly.GetExecutingAssembly().GetName().Name}.xml",
+                    $"{Assembly.GetAssembly(typeof(DataContext))!.GetName().Name}.xml"
+                };
+
+                foreach (var xmlFile in xmlFiles)
+                {
+                    var path = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    options.IncludeXmlComments(path);
+                    // 改使用 UseInlineDefinitionsForEnums
+                    //options.SchemaFilter<SwaggerSchemaEnumDescription>(XDocument.Load(path));
+                }
+
                 options.SchemaFilter<SwaggerSchemaSortProperty>();
+                options.UseInlineDefinitionsForEnums();
                 options.EnableAnnotations();
                 //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 //{
-                //    Description = "JWT Authorization header using the Bearer scheme, ex. Bearer {token}",
+                //    Description = "JWT Authorization header using the Bearer scheme.",
                 //    Name = "Authorization",
                 //    In = ParameterLocation.Header,
-                //    Type = SecuritySchemeType.ApiKey,
+                //    Type = SecuritySchemeType.Http,
+                //    BearerFormat = "JWT",
                 //    Scheme = "Bearer"
                 //});
 

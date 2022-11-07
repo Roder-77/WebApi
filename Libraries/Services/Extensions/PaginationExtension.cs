@@ -1,5 +1,7 @@
 ﻿#nullable disable
 
+using Microsoft.EntityFrameworkCore;
+
 namespace Services.Extensions
 {
     public static class PaginationExtension
@@ -17,7 +19,7 @@ namespace Services.Extensions
             };
         }
 
-        public static PaginationList<T> ToPaginationList<T>(this IQueryable<T> items, int page, int pageSize = 20) where T : class
+        public static async Task<PaginationList<T>> ToPaginationList<T>(this IQueryable<T> items, int page, int pageSize = 20) where T : class
         {
             var skip = (page - 1) * pageSize;
 
@@ -25,8 +27,8 @@ namespace Services.Extensions
             {
                 Page = page,
                 PageSize = pageSize,
-                TotalCount = items.Count(),
-                Items = items.Skip(skip).Take(pageSize).ToList(),
+                TotalCount = await items.CountAsync(),
+                Items = await items.Skip(skip).Take(pageSize).ToListAsync(),
             };
         }
 
@@ -50,18 +52,7 @@ namespace Services.Extensions
             /// <summary>
             /// 總頁數
             /// </summary>
-            public int TotalPages
-            {
-                get
-                {
-                    var totalPages = TotalCount / PageSize;
-
-                    if (TotalCount % PageSize != 0)
-                        totalPages += 1;
-
-                    return totalPages;
-                }
-            }
+            public int TotalPages => (int)Math.Ceiling((decimal)TotalCount / PageSize);
 
             /// <summary>
             /// 是否有上一頁

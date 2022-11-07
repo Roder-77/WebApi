@@ -1,6 +1,6 @@
-﻿using Models.Enums;
+﻿using Common.Enums;
 
-namespace Services.Extensions
+namespace Common.Extensions
 {
     public static class DateTimeExtension
     {

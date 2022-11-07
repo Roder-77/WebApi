@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Models;
 using Models.DataModels;
 using Serilog;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using WebApi.Filters;
 using WebApi.Middleware;
 using WebApi.Utils;
@@ -28,21 +30,22 @@ try
 
     builder.Services.RegisterDependency();
 
+    // DbContext
+    //builder.AddDbContext();
+    builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
+
     builder.Services
         .AddControllers(options =>
         {
             options.Conventions.Add(new RouteTokenTransformerConvention(new CamelCaseParameterTransformer()));
             options.Filters.Add(typeof(LogInvalidModelState));
         })
+        .AddJsonOptions(options =>options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
         .ConfigureApiBehaviorOptions(options =>
         {
             // Disable automatic 400 response
             options.SuppressModelStateInvalidFilter = true;
         });
-
-    // DbContext
-    //builder.AddDbContext();
-    builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
 
     builder.Services.AddSwagger();
 
@@ -73,6 +76,12 @@ try
     app.UseMiddleware<LogApiInformation>();
 
     //app.UseHttpsRedirection();
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "upload")),
+        RequestPath = "/Upload",
+    });
 
     app.UseAuthentication();
 

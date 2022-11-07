@@ -1,21 +1,21 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Models.DataModels;
 using Models.Request;
 using Models.ViewModels;
-using Services.Repositories;
 using static Services.Extensions.PaginationExtension;
 
 namespace Services
 {
-    public class MemberService
+    public class MemberService : BaseService<Member>
     {
         private readonly IMapper _mapper;
-        private readonly IGenericRepository<Member> _repository;
 
-        public MemberService(IMapper mapper, IGenericRepository<Member> repository)
+        public MemberService(
+            IMapper mapper,
+            IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
             _mapper = mapper;
-            _repository = repository;
         }
 
         /// <summary>
@@ -23,9 +23,9 @@ namespace Services
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        public MemberVM? GetMember(int id)
+        public async Task<MemberVM?> GetMember(int id)
         {
-            var member = _repository.GetById(id);
+            var member = await _repository.GetById(id);
 
             return _mapper.Map<Member, MemberVM>(member);
         }
@@ -47,11 +47,11 @@ namespace Services
         /// <param name="page">頁數</param>
         /// <param name="pageSize">數量</param>
         /// <returns></returns>
-        public PaginationList<MemberVM> GetMembers(int page, int pageSize)
+        public async Task<PaginationList<MemberVM>> GetMembers(int page, int pageSize)
         {
             var skip = (page - 1) * pageSize;
 
-            var members = _repository.TableWithoutTracking
+            var members = await _repository.TableWithoutTracking
                 .Where(x => x.IsVerifyByMobile)
                 .ToPaginationList(page, pageSize);
 
@@ -65,7 +65,7 @@ namespace Services
         /// <returns></returns>
         public async Task UpdateMember(UpdateMemberRequest request)
         {
-            var member = _repository.GetById(request.Id);
+            var member = await _repository.GetById(request.Id);
 
             if (member == null)
                 throw new NullReferenceException();

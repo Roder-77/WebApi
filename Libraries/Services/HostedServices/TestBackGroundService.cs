@@ -20,7 +20,8 @@ namespace Services.HostedServices
         public Task StartAsync(CancellationToken cancellationToken)
         {
             var now = DateTime.Now;
-            var dueTime = new DateTime(now.Year, now.Month, now.Day + 1, 1, 0, 0) - now;
+            var tomorrow = DateTime.Now.AddDays(1);
+            var dueTime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 1, 0, 0) - now;
             var period = TimeSpan.FromHours(24);
 
             _timer = new Timer(new TimerCallback(DoWork), null, dueTime, period);

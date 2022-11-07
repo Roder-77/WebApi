@@ -1,9 +1,9 @@
-﻿using Models.Enums;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Common.Enums;
 
-namespace Services.Extensions
+namespace Common.Extensions
 {
     public static class EnumExtension
     {

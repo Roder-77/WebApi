@@ -9,16 +9,16 @@ using System.Net;
 
 namespace Services
 {
-    public class SendAwsMailService : ISendMailService
+    public class AwsMailService : IMailService
     {
-        private readonly ILogger<SendAwsMailService> _logger;
-        private readonly Mail _mail;
+        private readonly ILogger<AwsMailService> _logger;
+        private readonly MailSettings _mailSettings;
         private string _fromLocalPart;
 
-        public SendAwsMailService(ILogger<SendAwsMailService> logger, IOptions<Appsettings> appsettings)
+        public AwsMailService(ILogger<AwsMailService> logger, IOptions<MailSettings> mailSettings)
         {
             _logger = logger;
-            _mail = appsettings.Value.Mail;
+            _mailSettings = mailSettings.Value;
             _fromLocalPart = "no-reply";
         }
 
@@ -33,7 +33,7 @@ namespace Services
         {
             try
             {
-                if (!_mail.Aws.HasValue)
+                if (!_mailSettings.Aws.HasValue)
                     throw new ArgumentException(GetArgumentEmptyMessage("Aws ses settings"));
 
                 if (string.IsNullOrWhiteSpace(subject))
@@ -42,16 +42,16 @@ namespace Services
                 if (string.IsNullOrWhiteSpace(body))
                     throw new ArgumentNullException(GetArgumentEmptyMessage(nameof(body)));
 
-                var recipients = _mail.Recipients?.ToList() ?? new List<string>();
+                var recipients = _mailSettings.Recipients?.ToList() ?? new List<string>();
 
                 if (!recipients.Any())
                     throw new ArgumentException(GetArgumentEmptyMessage(nameof(recipients)));
 
-                using var client = new AmazonSimpleEmailServiceClient(_mail.Aws.AccessKeyId, _mail.Aws.SecretAccessKey, RegionEndpoint.APNortheast1);
+                using var client = new AmazonSimpleEmailServiceClient(_mailSettings.Aws.AccessKeyId, _mailSettings.Aws.SecretAccessKey, RegionEndpoint.APNortheast1);
                 var sendRequest = new SendEmailRequest
                 {
-                    Source = $"{_fromLocalPart}@{_mail.Aws.Source.Domain}",
-                    SourceArn = _mail.Aws.Source.Arn,
+                    Source = $"{_fromLocalPart}@{_mailSettings.Aws.Source.Domain}",
+                    SourceArn = _mailSettings.Aws.Source.Arn,
                     Destination = new Destination
                     {
                         ToAddresses = recipients,

@@ -12,7 +12,7 @@ namespace Models
     {
         public Jwtsettings JwtSettings { get; set; }
 
-        public Mail Mail { get; set; }
+        public MailSettings Mail { get; set; }
     }
 
     public class Jwtsettings
@@ -22,7 +22,7 @@ namespace Models
         public string Key { get; set; }
     }
 
-    public class Mail
+    public class MailSettings
     {
         public IEnumerable<string> Recipients { get; set; }
 

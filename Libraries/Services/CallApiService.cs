@@ -4,14 +4,14 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace Services.Helpers
+namespace Services
 {
-    public class CallApiHelper
+    public class CallApiService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<CallApiHelper> _logger;
+        private readonly ILogger<CallApiService> _logger;
 
-        public CallApiHelper(ILogger<CallApiHelper> logger, IHttpClientFactory httpClientFactory)
+        public CallApiService(ILogger<CallApiService> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;

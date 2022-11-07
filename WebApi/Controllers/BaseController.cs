@@ -13,11 +13,14 @@ namespace WebApi.Controllers
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]s")]
     [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(ErrorResponse))]
+    [SwaggerResponse((int)HttpStatusCode.Unauthorized, unauthorized, typeof(ErrorResponse))]
     [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
     public class BaseController : ControllerBase
     {
+        protected const int statusCode200 = (int)HttpStatusCode.OK;
         protected const string ok = "Success";
-        private const string badRequest = "Bad Request";
+        private const string badRequest = "Bad request";
+        private const string unauthorized = "Unauthorized";
         private const string internalServerError = "Internal server error";
 
         protected Response<object> Response200 = new()

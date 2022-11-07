@@ -1,8 +1,8 @@
 ﻿namespace Services.Interface
 {
-    public interface ISendMailService
+    public interface IMailService
     {
-        public delegate ISendMailService MailServiceResolver(MailServiceType type);
+        public delegate IMailService MailServiceResolver(MailServiceType type);
 
         public enum MailServiceType { Normal, Aws };
 

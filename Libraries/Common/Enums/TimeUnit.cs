@@ -1,4 +1,4 @@
-﻿namespace Models.Enums
+﻿namespace Common.Enums
 {
     public enum TimeUnit
     {

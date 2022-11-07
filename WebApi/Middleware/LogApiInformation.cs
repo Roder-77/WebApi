@@ -2,6 +2,7 @@
 using Models.Response;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace WebApi.Middleware
 {
@@ -44,7 +45,16 @@ namespace WebApi.Middleware
             cloneBody.Seek(0, SeekOrigin.Begin);
             request.Body = cloneBody;
 
-            _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
+            if (!body.Contains("form-data"))
+            {
+                _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
+                return;
+            }
+
+            var fileNames = Regex.Matches(body, "(?<=filename=\").*(?=\")", RegexOptions.Multiline)
+                    .Select(x => x.Value);
+
+            _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, file name: {string.Join(", ", fileNames)}");
         }
 
         private async Task LogResponse(HttpContext context, Exception ex)

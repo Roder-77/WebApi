@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Services.Helpers
+namespace Common.Helpers
 {
     public class HashHelper
     {

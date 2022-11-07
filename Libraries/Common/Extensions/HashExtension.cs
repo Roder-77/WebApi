@@ -1,7 +1,7 @@
-﻿using Services.Helpers;
-using System.Text;
+﻿using System.Text;
+using Common.Helpers;
 
-namespace Services.Extensions
+namespace Common.Extensions
 {
     public static class HashExtension
     {

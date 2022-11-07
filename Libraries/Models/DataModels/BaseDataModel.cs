@@ -23,4 +23,12 @@ namespace Models.DataModels
 
         public int Updater { get; set; }
     }
+
+    public interface ISoftDelete
+    {
+        /// <summary>
+        /// 是否刪除
+        /// </summary>
+        public bool IsDeleted { get; set; }
+    }
 }
