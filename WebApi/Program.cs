@@ -28,6 +28,8 @@ try
 
     builder.Services.Configure<Appsettings>(builder.Configuration);
 
+    builder.Services.AddDistributedMemoryCache();
+
     builder.Services.RegisterDependency();
 
     // DbContext
