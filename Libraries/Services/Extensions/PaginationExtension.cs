@@ -1,6 +1,6 @@
-﻿#nullable disable
+﻿using Microsoft.EntityFrameworkCore;
 
-using Microsoft.EntityFrameworkCore;
+#nullable disable
 
 namespace Services.Extensions
 {

@@ -1,15 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Models;
+using Models.DataModels;
 using Scrutor;
 using Services.HostedServices;
-using Services.Interface;
 using Services.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Services.Interface.IMailService;
 
 namespace Services.Extensions
@@ -33,8 +31,12 @@ namespace Services.Extensions
             services.AddSingleton<CommonService>();
         }
 
-        public static void AddRepository(this IServiceCollection services)
-            => services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        public static void AddRepository(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
+        {
+            services.AddDbContext<DataContext>(optionsAction);
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        }
 
         public static void AddHostedService(this IServiceCollection services)
             => services.AddHostedService<TestBackGroundService>();
@@ -53,6 +55,29 @@ namespace Services.Extensions
                     _ => throw new NotSupportedException()
                 };
             });
+        }
+
+        public static void AddHangfire(this IServiceCollection services, string connectionString)
+        {
+            services.AddHangfire(config =>
+            {
+                var storageOptions = new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                };
+                var storage = new SqlServerStorage(connectionString, storageOptions);
+
+                config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseStorage(storage);
+            });
+
+            services.AddHangfireServer(options => options.WorkerCount = 10);
         }
     }
 }

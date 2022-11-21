@@ -30,11 +30,9 @@ try
 
     builder.Services.AddDistributedMemoryCache();
 
-    builder.Services.RegisterDependency();
+    builder.RegisterDependency();
 
-    // DbContext
-    //builder.AddDbContext();
-    builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
+    //builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
 
     builder.Services
         .AddControllers(options =>

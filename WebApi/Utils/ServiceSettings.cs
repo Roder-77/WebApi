@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models.DataModels;
@@ -15,10 +16,22 @@ namespace WebApi.Utils
 {
     public static class ServiceSettings
     {
-        public static void RegisterDependency(this IServiceCollection services)
+        public static void RegisterDependency(this WebApplicationBuilder builder)
         {
+            var services = builder.Services;
+
+            services.AddRepository(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging();
+                    options.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.MultipleNavigationProperties));
+                }
+            });
+
             services.AddService();
-            services.AddRepository();
             //services.AddHostedService();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
