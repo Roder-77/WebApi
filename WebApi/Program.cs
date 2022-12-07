@@ -30,8 +30,6 @@ try
 
     builder.Services.AddDistributedMemoryCache();
 
-    builder.RegisterDependency();
-
     //builder.Services.AddDbContext<MemoryContext>(options => options.UseInMemoryDatabase("MemoryDemo"));
 
     builder.Services
@@ -51,8 +49,12 @@ try
 
     builder.AddJwtVerification();
 
+    builder.AddDefaultCors();
+
+    builder.RegisterDependency();
+
     // Serilog
-    builder.WebHost.UseSerilog();
+    builder.Host.UseSerilog();
 
     var app = builder.Build();
 
@@ -77,11 +79,9 @@ try
 
     //app.UseHttpsRedirection();
 
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "upload")),
-        RequestPath = "/Upload",
-    });
+    app.UseStaticFiles("upload");
+
+    app.UseCors();
 
     app.UseAuthentication();
 

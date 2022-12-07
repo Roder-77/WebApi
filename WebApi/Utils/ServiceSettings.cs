@@ -144,5 +144,24 @@ namespace WebApi.Utils
 
             builder.Services.AddAuthorization();
         }
+
+        public static void AddDefaultCors(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy
+                        .SetIsOriginAllowed(origin => {
+                            var originHost = new Uri(origin).Host;
+                            var allowedHosts = builder.Configuration.GetValue<string>("AllowedHosts").Split(';');
+                            return allowedHosts.Any(host => originHost.Equals(host, StringComparison.OrdinalIgnoreCase));
+                        })
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
+        }
     }
 }

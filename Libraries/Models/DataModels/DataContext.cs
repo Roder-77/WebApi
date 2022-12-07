@@ -16,6 +16,7 @@ namespace Models.DataModels
         {
             base.OnModelCreating(modelBuilder);
 
+            // add more..
             modelBuilder.Entity<Member>(action => { });
 
             RegisterAllEntities(modelBuilder);
