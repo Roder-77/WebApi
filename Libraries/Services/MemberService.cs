@@ -51,7 +51,7 @@ namespace Services
         {
             var skip = (page - 1) * pageSize;
 
-            var members = await _repository.TableWithoutTracking
+            var members = await _repository.Table
                 .Where(x => x.IsVerifyByMobile)
                 .ToPaginationList(page, pageSize);
 

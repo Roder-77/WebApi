@@ -14,9 +14,9 @@ namespace Services.Repositories
     {
         DatabaseFacade Database { get; }
 
-        DbSet<TEntity> Table { get; }
+        DbSet<TEntity> DbSetTable { get; }
 
-        IQueryable<TEntity> TableWithoutTracking { get; }
+        IQueryable<TEntity> Table { get; }
 
         Task<TEntity?> Get(Expression<Func<TEntity, bool>>? predicate = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null, Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null, bool hasTracking = false);
 
@@ -26,11 +26,13 @@ namespace Services.Repositories
 
         Task<PaginationList<TEntity>> GetPaginationList(int page, int pageSize, Expression<Func<TEntity, bool>>? predicate = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null, Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null, bool hasTracking = false);
 
-        Task Insert(TEntity entity, bool saveImmediately = true);
+        Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true);
 
-        Task InsertMultiple(IEnumerable<TEntity> entities);
+        Task InsertRange(IEnumerable<TEntity> entities, bool setCreator = true);
 
-        Task Update(TEntity entity, bool saveImmediately = true);
+        Task Update(TEntity entity, bool saveImmediately = true, bool setUpdater = true);
+
+        Task UpdateRange(IEnumerable<TEntity> entities, bool setUpdater = true);
 
         Task DeleteById(int id, bool saveImmediately = true);
 

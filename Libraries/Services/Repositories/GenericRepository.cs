@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Models.DataModels;
 using Services.Extensions;
 using System.Data;
@@ -18,7 +20,9 @@ namespace Services.Repositories
         where TEntity : BaseDataModel
     {
         private readonly MemoryContext _context;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpContext _httpContext;
+
+        private readonly IServiceProvider _serviceProvider;
 
         private Action<BulkOperation> _bulkOperation => options =>
         {
@@ -26,15 +30,16 @@ namespace Services.Repositories
             options.AutoMapOutputDirection = false;
         };
 
-        public GenericRepository(MemoryContext context, IHttpContextAccessor httpContextAccessor)
+        public GenericRepository(MemoryContext context, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
-            _httpContextAccessor = httpContextAccessor;
+            _serviceProvider = serviceProvider;
+            _httpContext = httpContextAccessor.HttpContext!;
         }
 
         public DatabaseFacade Database => _context.Database;
-        public DbSet<TEntity> Table => _context.Set<TEntity>();
-        public IQueryable<TEntity> TableWithoutTracking => _context.Set<TEntity>().AsNoTracking();
+        public DbSet<TEntity> DbSetTable => _context.Set<TEntity>();
+        public IQueryable<TEntity> Table => _context.Set<TEntity>().AsNoTracking();
 
         private IQueryable<TEntity> Query(
             Expression<Func<TEntity, bool>>? predicate = null,
@@ -42,7 +47,7 @@ namespace Services.Repositories
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
             bool hasTracking = false)
         {
-            var query = hasTracking ? Table : TableWithoutTracking;
+            var query = hasTracking ? DbSetTable : Table;
 
             if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
                 query = query
@@ -94,63 +99,86 @@ namespace Services.Repositories
             => await Query(predicate, include, order, hasTracking).ToPaginationList(page, pageSize);
 
 
-        public async Task Insert(TEntity entity, bool saveImmediately = true)
+        public async Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true)
         {
             var entityType = typeof(TEntity);
             var nowTime = DateTime.Now.ToTimestamp();
-            var member = _httpContextAccessor.HttpContext.GetMember();
+            var memberId = setCreator ? _httpContext.GetMember().Id : 1;
 
             if (typeof(ICreateEntity).IsAssignableFrom(entityType))
             {
                 var createEntity = (ICreateEntity)entity;
-                createEntity.CreateTime = nowTime;
-                createEntity.Creator = member.Id;
+                createEntity.Creator = memberId;
+
+                if (createEntity.CreateTime == default)
+                    createEntity.CreateTime = nowTime;
             }
 
             if (typeof(IUpdateEntity).IsAssignableFrom(entityType))
             {
                 var updateEntity = (IUpdateEntity)entity;
-                updateEntity.UpdateTime = nowTime;
-                updateEntity.Updater = member.Id;
+                updateEntity.Updater = memberId;
+
+                if (updateEntity.UpdateTime == default)
+                    updateEntity.UpdateTime = nowTime;
             }
 
-            Table.Add(entity);
+            _context.Add(entity);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
         }
 
-        public async Task InsertMultiple(IEnumerable<TEntity> entities)
+        public async Task InsertRange(IEnumerable<TEntity> entities, bool setCreator = true)
         {
             foreach (var entity in entities)
-                await Insert(entity, false);
+                await Insert(entity, false, setCreator);
 
             await _context.BulkSaveChangesAsync();
         }
 
-        public async Task Update(TEntity entity, bool saveImmediately = true)
+        public async Task Update(TEntity entity, bool saveImmediately = true, bool setUpdater = true)
         {
             if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
             {
-                var member = _httpContextAccessor.HttpContext.GetMember();
                 var updateEntity = (IUpdateEntity)entity;
-                updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-                updateEntity.Updater = member.Id;
+                if (updateEntity.UpdateTime == default)
+                    updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
+
+                updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
             }
 
-            Table.Update(entity);
+            _context.Update(entity);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateRange(IEnumerable<TEntity> entities, bool setUpdater = true)
+        {
+            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                foreach (var entity in entities)
+                {
+                    var updateEntity = (IUpdateEntity)entity;
+                    if (updateEntity.UpdateTime == default)
+                        updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
+
+                    updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
+                }
+            }
+
+            _context.UpdateRange(entities);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteById(int id, bool saveImmediately = true)
         {
-            var item = Table.FirstOrDefault(x => x.Id == id);
+            var item = DbSetTable.FirstOrDefault(x => x.Id == id);
 
             if (item == null) return;
 
-            Table.Remove(item);
+            _context.Remove(item);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
@@ -190,6 +218,28 @@ namespace Services.Repositories
             var transaction = Database.CurrentTransaction?.GetDbTransaction();
 
             return await connection.QueryFirstOrDefaultAsync<T>(sql, parameter, transaction, commandTimeout, commandType);
+        }
+
+        public async Task ExecuteByTransaction(Func<Task> function, string errorMessage, IsolationLevel? isolationLevel = null)
+        {
+            using var transaction = isolationLevel.HasValue
+                ? await Database.BeginTransactionAsync(isolationLevel.GetValueOrDefault())
+                : await Database.BeginTransactionAsync();
+
+            try
+            {
+                await function();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<GenericRepository<TEntity>>>();
+                logger.LogError(ex, errorMessage);
+
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }
