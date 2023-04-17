@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Models.DataModels;
 using Models.Request;
 using Models.ViewModels;
@@ -9,14 +8,8 @@ namespace Services
 {
     public class MemberService : BaseService<Member>
     {
-        private readonly IMapper _mapper;
-
-        public MemberService(
-            IMapper mapper,
-            IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-        {
-            _mapper = mapper;
-        }
+        public MemberService(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        { }
 
         /// <summary>
         /// 取得會員
