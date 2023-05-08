@@ -34,54 +34,26 @@ namespace Services.Extensions
         /// <typeparam name="TEntity">資料實體</typeparam>
         /// <typeparam name="TEnum">實體欄位列舉</typeparam>
         /// <param name="query">query</param>
-        /// <param name="orderedCondition">排序條件</param>
+        /// <param name="sortCondition">排序條件</param>
+        /// <param name="customOrder">客製排序 (排序為子表欄位時使用)</param>
         /// <returns></returns>
-        public static IQueryable<TEntity> Order<TEntity, TEnum>(this IQueryable<TEntity> query, OrderedCondition<TEnum>? orderedCondition)
+        public static IQueryable<TEntity> Order<TEntity, TEnum>(this IQueryable<TEntity> query, SortCondition<TEnum>? sortCondition, Func<IQueryable<TEntity>, IQueryable<TEntity>>? customOrder = null)
             where TEntity : BaseDataModel
-            where TEnum : Enum
+            where TEnum : struct
         {
-            if (orderedCondition is null)
+            if (sortCondition is null || !sortCondition.HasValue)
                 return query;
 
-            var orderExpression = GetOrderByExpression<TEntity>(orderedCondition.PropertyName);
+            var orderExpression = GenerateLambdaExpression<TEntity>(sortCondition.ColumnName);
             if (orderExpression is null)
-                return query;
-
-            return query.Order(orderedCondition.SortType, orderExpression);
-        }
-
-        /// <summary>
-        /// 多欄位排序
-        /// </summary>
-        /// <typeparam name="TEntity">資料實體</typeparam>
-        /// <typeparam name="TEnum">實體欄位列舉</typeparam>
-        /// <param name="query">query</param>
-        /// <param name="orderedConditions">排序條件列表</param>
-        /// <returns></returns>
-        public static IQueryable<TEntity> Order<TEntity, TEnum>(this IQueryable<TEntity> query, List<OrderedCondition<TEnum>>? orderedConditions)
-            where TEntity : BaseDataModel
-            where TEnum : Enum
-        {
-            if (orderedConditions is null || !orderedConditions.Any())
-                return query;
-
-            IOrderedQueryable<TEntity>? orderedQuery = null;
-
-            foreach (var condition in orderedConditions)
             {
-                var orderExpression = GetOrderByExpression<TEntity>(condition.PropertyName);
-                if (orderExpression is null)
-                    continue;
+                if (customOrder is null)
+                    return query;
 
-                orderedQuery = orderedQuery is null
-                        ? query.Order(condition.SortType, orderExpression)
-                        : orderedQuery.Order(condition.SortType, orderExpression);
+                return customOrder(query);
             }
 
-            if (orderedQuery is null)
-                return query;
-
-            return orderedQuery;
+            return query.Order(sortCondition.SortType!.Value, orderExpression);
         }
 
         /// <summary>
@@ -90,7 +62,7 @@ namespace Services.Extensions
         /// <typeparam name="TEntity">資料實體</typeparam>
         /// <param name="name">欄位名稱</param>
         /// <returns></returns>
-        private static Expression<Func<TEntity, object>>? GetOrderByExpression<TEntity>(string name) where TEntity : BaseDataModel
+        private static Expression<Func<TEntity, object>>? GenerateLambdaExpression<TEntity>(string name) where TEntity : BaseDataModel
         {
             var type = typeof(TEntity);
             var propertyInfo = type.GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);

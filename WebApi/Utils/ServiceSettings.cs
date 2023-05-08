@@ -98,7 +98,9 @@ namespace WebApi.Utils
                     //options.SchemaFilter<SwaggerSchemaEnumDescription>(XDocument.Load(path));
                 }
 
+                options.OrderActionsBy(apiDesc => apiDesc.RelativePath);
                 options.SchemaFilter<SwaggerSchemaSortProperty>();
+                options.OperationFilter<SwaggerIgnoreParameter>();
                 options.UseInlineDefinitionsForEnums();
                 options.EnableAnnotations();
                 //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -153,9 +155,14 @@ namespace WebApi.Utils
                 {
                     policy
                         .SetIsOriginAllowed(origin => {
+                            var allowedHosts = builder.Configuration.GetValue<string>("AllowedHosts");
+                            if (allowedHosts == "*")
+                                return true;
+
                             var originHost = new Uri(origin).Host;
-                            var allowedHosts = builder.Configuration.GetValue<string>("AllowedHosts").Split(';');
-                            return allowedHosts.Any(host => originHost.Equals(host, StringComparison.OrdinalIgnoreCase));
+                            var allowedHostParts = allowedHosts!.Split(';');
+
+                            return allowedHostParts.Any(host => originHost.Equals(host, StringComparison.OrdinalIgnoreCase));
                         })
                         .AllowAnyHeader()
                         .AllowAnyMethod()

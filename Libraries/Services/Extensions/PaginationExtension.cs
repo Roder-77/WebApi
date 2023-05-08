@@ -28,7 +28,11 @@ namespace Services.Extensions
                 Page = page,
                 PageSize = pageSize,
                 TotalCount = await items.CountAsync(),
-                Items = await items.Skip(skip).Take(pageSize).ToListAsync(),
+                Items = await items
+                    .AsSingleQuery()
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToListAsync(),
             };
         }
 

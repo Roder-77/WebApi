@@ -22,7 +22,6 @@ namespace Models.DataModels
             RegisterAllEntities(modelBuilder);
         }
 
-
         /// <summary>
         /// 註冊所有實體
         /// </summary>
@@ -31,7 +30,7 @@ namespace Models.DataModels
         {
             var baseDataModelType = typeof(BaseDataModel);
             var types = baseDataModelType.Assembly.GetExportedTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic && typeof(BaseDataModel).IsAssignableFrom(t) && t != baseDataModelType);
+                .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic && t != baseDataModelType && baseDataModelType.IsAssignableFrom(t));
 
             foreach (var type in types)
                 modelBuilder.Entity(type);
