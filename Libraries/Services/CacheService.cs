@@ -14,7 +14,7 @@ namespace Services
             _cache = cache;
         }
 
-        public async Task<T?> Get<T>(string key)
+        public async Task<T?> Get<T>(string key) where T : class
         {
             var bytes = await _cache.GetAsync(key);
             if (bytes is null)
@@ -25,10 +25,16 @@ namespace Services
             return JsonSerializer.Deserialize<T>(json);
         }
 
-        public async Task Set<T>(string key, T value)
+        public async Task Set<T>(string key, T value, DistributedCacheEntryOptions? options = null) where T : class
         {
             var json = JsonSerializer.Serialize(value);
             var bytes = GZipHelper.Zip(json);
+
+            if (options is not null)
+            {
+                await _cache.SetAsync(key, bytes, options);
+                return;
+            }
 
             await _cache.SetAsync(key, bytes);
         }

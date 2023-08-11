@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Models.Attributes;
 using Models.Request;
 using Models.Response;
 using Models.ViewModels;
@@ -24,7 +25,7 @@ namespace WebApi.Controllers
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [SwaggerResponse(statusCode200, ok, typeof(Response<MemberVM>))]
+        [SwaggerSuccessResponse(typeof(Response<MemberVM>))]
         public async Task<IActionResult> GetMember([FromRoute] int id)
         {
             var member = await _service.GetMember(id);
@@ -42,7 +43,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [SwaggerResponse(statusCode200, ok, typeof(DefaultResponse))]
+        [SwaggerSuccessResponse()]
         public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
         {
             await _service.InsertMember(request);
@@ -56,7 +57,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpPut]
-        [SwaggerResponse(statusCode200, ok, typeof(DefaultResponse))]
+        [SwaggerSuccessResponse()]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
         {
             await _service.UpdateMember(request);
@@ -70,7 +71,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpGet]
-        [SwaggerResponse(statusCode200, ok, typeof(Response<PaginationList<MemberVM>>))]
+        [SwaggerSuccessResponse(typeof(Response<PaginationList<MemberVM>>))]
         public async Task<IActionResult> GetMembers([FromQuery] GetMembersRequest request)
         {
             Response200.Data = await _service.GetMembers(request.Page, request.PageSize);

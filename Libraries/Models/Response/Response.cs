@@ -26,4 +26,11 @@ namespace Models.Response
         [DataMember(Order = 3)]
         public virtual T Data { get; set; }
     }
+
+    public class DefaultResponse : Response<object>
+    {
+        [DataMember(Order = 3)]
+        [DefaultValue(null)]
+        public override object? Data { get; set; }
+    }
 }

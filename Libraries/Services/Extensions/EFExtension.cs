@@ -1,8 +1,11 @@
 ﻿using Common.Enums;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Models;
 using Models.DataModels;
 using System.Linq.Expressions;
 using System.Reflection;
+using Z.EntityFramework.Extensions;
 
 namespace Services.Extensions
 {
@@ -57,24 +60,57 @@ namespace Services.Extensions
         }
 
         /// <summary>
-        /// 取得排序表達式
+        /// 產生 Lambda 表達式
         /// </summary>
         /// <typeparam name="TEntity">資料實體</typeparam>
-        /// <param name="name">欄位名稱</param>
+        /// <param name="columnPath">欄位路徑，以點區隔</param>
         /// <returns></returns>
-        private static Expression<Func<TEntity, object>>? GenerateLambdaExpression<TEntity>(string name) where TEntity : BaseDataModel
+        private static Expression<Func<TEntity, object>>? GenerateLambdaExpression<TEntity>(string columnPath)
+            where TEntity : BaseDataModel
         {
+            MemberExpression? member = null;
             var type = typeof(TEntity);
-            var propertyInfo = type.GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-
-            if (propertyInfo is null)
-                return null;
-
+            // {x} =>
             var parameter = Expression.Parameter(type);
-            var member = Expression.Property(parameter, propertyInfo);
-            var conversion = Expression.Convert(member, typeof(object));
 
+            // x.{property} or more x.{property}.{property}...
+            try
+            {
+                foreach (var part in columnPath.Split("."))
+                {
+                    if (member is null)
+                    {
+                        member = Expression.Property(parameter, part);
+                        continue;
+                    }
+
+                    member = Expression.Property(member, part);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 攔截無對應 property 的錯誤
+                if (ex is ArgumentException)
+                    return null;
+            }
+
+            // (object)x.{property}
+            var conversion = Expression.Convert(member!, typeof(object));
+
+            // x => (object)x.{property}
             return Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
+        }
+
+        /// <summary>
+        /// 基於 predicates 篩選資料
+        /// </summary>
+        /// <typeparam name="TEntity">資料實體</typeparam>
+        /// <returns></returns>
+        public static IQueryable<TEntity> Where<TEntity>(this IQueryable<TEntity> query, List<Expression<Func<TEntity, bool>>> predicates)
+            where TEntity : BaseDataModel
+        {
+            var predicate = predicates.CombineByAnd();
+            return predicate is null ? query : query.Where(predicate);
         }
     }
 }

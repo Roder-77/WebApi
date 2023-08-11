@@ -1,4 +1,5 @@
 ﻿using Common.Enums;
+using Common.Extensions;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
@@ -35,7 +36,7 @@ namespace Models
         /// 欄位名稱
         /// </summary>
         [JsonIgnore]
-        public string ColumnName => !SortColumn.HasValue ? string.Empty : SortColumn.ToString();
+        public string ColumnName => !SortColumn.HasValue ? string.Empty : SortColumn.Value.GetAttributeContent(AttributeType.Description);
 
         [JsonIgnore]
         public bool HasValue => SortColumn.HasValue && SortType.HasValue;

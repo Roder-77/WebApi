@@ -66,6 +66,9 @@ try
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
+        // Disable swagger schemas at bottom
+        options.DefaultModelsExpandDepth(-1);
+
         var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
 
         foreach (var description in provider.ApiVersionDescriptions)

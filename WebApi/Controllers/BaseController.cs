@@ -17,8 +17,6 @@ namespace WebApi.Controllers
     [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
     public class BaseController : ControllerBase
     {
-        protected const int statusCode200 = (int)HttpStatusCode.OK;
-        protected const string ok = "Success";
         private const string badRequest = "Bad request";
         private const string unauthorized = "Unauthorized";
         private const string internalServerError = "Internal server error";
@@ -40,13 +38,6 @@ namespace WebApi.Controllers
             Code = 0,
             Message = "Internal server error",
         };
-
-        protected class DefaultResponse : Response<object>
-        {
-            [DataMember(Order = 3)]
-            [DefaultValue(null)]
-            public override object Data { get; set; }
-        }
 
         protected class ErrorResponse : DefaultResponse
         {

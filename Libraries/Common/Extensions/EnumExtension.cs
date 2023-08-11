@@ -13,21 +13,21 @@ namespace Common.Extensions
         /// <param name="enumValue">Enum</param>
         /// <param name="type">Attribute type</param>
         /// <returns>Enum Name</returns>
-        public static string GetAttributeContent(this Enum enumValue, AttributeType type = AttributeType.Display)
+        public static string GetAttributeContent<TEnum>(this TEnum enumValue, AttributeType type = AttributeType.Display) where TEnum : struct
         {
             if (type == AttributeType.Description)
             {
-                var descriptionAttribute = getCustomAttribute<DescriptionAttribute>(enumValue);
-                return getValueOrDefault(descriptionAttribute?.Description);
+                var descriptionAttribute = GetCustomAttribute<DescriptionAttribute>(enumValue);
+                return GetValueOrDefault(descriptionAttribute?.Description);
             }
 
-            var displayAttribute = getCustomAttribute<DisplayAttribute>(enumValue);
-            return getValueOrDefault(displayAttribute?.Name);
+            var displayAttribute = GetCustomAttribute<DisplayAttribute>(enumValue);
+            return GetValueOrDefault(displayAttribute?.Name);
 
-            TAttribute? getCustomAttribute<TAttribute>(Enum value) where TAttribute : Attribute
-                => value.GetType().GetField(value.ToString())?.GetCustomAttribute<TAttribute>(false);
+            TAttribute? GetCustomAttribute<TAttribute>(TEnum value) where TAttribute : Attribute
+                => value.GetType().GetField(value.ToString()!)?.GetCustomAttribute<TAttribute>(false);
 
-            string getValueOrDefault(string? value) => string.IsNullOrWhiteSpace(value) ? enumValue.ToString() : value;
+            string GetValueOrDefault(string? value) => string.IsNullOrWhiteSpace(value) ? enumValue.ToString()! : value;
         }
     }
 }
