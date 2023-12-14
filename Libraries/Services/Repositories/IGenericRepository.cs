@@ -36,6 +36,12 @@ namespace Services.Repositories
 
         Task DeleteById(int id, bool saveImmediately = true);
 
+        Task Delete(TEntity entity, bool saveImmediately = true);
+
+        Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true);
+
+        Task<int> SaveChanges();
+
         Task BulkInsert(IEnumerable<TEntity> entities);
 
         Task BulkInsert(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options);

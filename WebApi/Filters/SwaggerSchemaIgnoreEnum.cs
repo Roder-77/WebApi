@@ -13,15 +13,15 @@ namespace WebApi.Filters
             if (!context.Type.IsEnum)
                 return;
 
-            var openApiStrings = new List<IOpenApiAny>();
+            var openApiStrings = new Lazy<List<IOpenApiAny>>();
             foreach (var value in Enum.GetValues(context.Type))
             {
-                var member = context.Type.GetMember(value.ToString()).First();
+                var member = context.Type.GetMember(value.ToString()!).First();
                 if (!member.GetCustomAttributes<SwaggerIgnoreEnum>().Any())
-                    openApiStrings.Add(new OpenApiString(value.ToString()));
+                    openApiStrings.Value.Add(new OpenApiString(value.ToString()));
             }
 
-            schema.Enum = openApiStrings;
+            schema.Enum = openApiStrings.Value;
         }
     }
 }

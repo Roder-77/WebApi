@@ -38,5 +38,8 @@ namespace edgentauems.Filters
 
             await next();
         }
+
+        private bool HasActionAttribute<T>(ActionExecutingContext context) where T : Attribute
+            => context.ActionDescriptor.EndpointMetadata.Any(x => x.GetType() == typeof(T));
     }
 }

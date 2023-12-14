@@ -7,7 +7,7 @@ namespace Common.Extensions
     public static class HashExtension
     {
         /// <summary>
-        /// 轉成雜湊
+        /// To hash by hash algorithm
         /// Algorithm support: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=net-6.0
         /// </summary>
         /// <param name="source">原值</param>
@@ -48,8 +48,8 @@ namespace Common.Extensions
         {
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source));
             argon2.Salt = Encoding.UTF8.GetBytes(salt);
-            argon2.DegreeOfParallelism = 4;
-            argon2.Iterations = 4;
+            argon2.DegreeOfParallelism = 16;
+            argon2.Iterations = 8;
             argon2.MemorySize = 1024 * 128;
 
             return Convert.ToBase64String(argon2.GetBytes(32));

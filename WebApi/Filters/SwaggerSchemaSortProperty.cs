@@ -13,7 +13,7 @@ namespace WebApi.Filters
             if (!properties.Any(x => IsDefinedDataMemberAttribute(x)))
                 return;
 
-            var dic = new Dictionary<string, OpenApiSchema>();
+            var dic = new Lazy<Dictionary<string, OpenApiSchema>>();
             var exceptProperties = properties.Where(x => !IsDefinedDataMemberAttribute(x));
             var orderProperties = properties
                 .Where(x => IsDefinedDataMemberAttribute(x))
@@ -25,10 +25,10 @@ namespace WebApi.Filters
             foreach (var property in orderProperties)
             {
                 var current = schema.Properties.FirstOrDefault(x => x.Key.Equals(property.Name, StringComparison.OrdinalIgnoreCase));
-                ((ICollection<KeyValuePair<string, OpenApiSchema>>)dic).Add(current);
+                ((ICollection<KeyValuePair<string, OpenApiSchema>>)dic.Value).Add(current);
             }
 
-            schema.Properties = dic;
+            schema.Properties = dic.Value;
         }
 
         private bool IsDefinedDataMemberAttribute(PropertyInfo propertyInfo)

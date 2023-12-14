@@ -1,10 +1,16 @@
-﻿using Hangfire;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Models;
 using Models.DataModels;
+using Models.Request.Validators;
 using Scrutor;
 using Services.HostedServices;
 using Services.Repositories;
@@ -78,6 +84,29 @@ namespace Services.Extensions
             });
 
             services.AddHangfireServer(options => options.WorkerCount = 10);
+        }
+
+        public static void AddValidator(this IServiceCollection services)
+        {
+            ValidatorOptions.Global.LanguageManager = new CustomLanguageManager();
+
+            services.AddFluentValidationAutoValidation();
+            services.AddValidatorsFromAssemblyContaining<CustomLanguageManager>();
+        }
+
+        public static void AddConfigure(this IServiceCollection services)
+        {
+            services.Configure<FormOptions>(options =>
+            {
+                options.ValueLengthLimit = int.MaxValue;
+                options.MultipartBodyLengthLimit = int.MaxValue;
+                options.MultipartHeadersLengthLimit = int.MaxValue;
+            });
+
+            services.Configure<KestrelServerOptions>(options => options.Limits.MaxRequestBodySize = int.MaxValue);
+
+            //services.AddOptions<>()
+            //    .Configure<IConfiguration>((settings, config) => config.GetSection("").Bind(settings));
         }
     }
 }

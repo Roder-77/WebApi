@@ -1,3 +1,5 @@
+using Common.JsonConverters;
+using edgentauems.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Models;
 using Models.DataModels;
 using Serilog;
+using Services.Extensions;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using WebApi.Filters;
@@ -26,7 +29,7 @@ try
 
     builder.Services.AddHttpClient();
 
-    builder.Services.Configure<Appsettings>(builder.Configuration);
+    builder.Services.AddConfigure();
 
     builder.Services.AddDistributedMemoryCache();
 
@@ -37,13 +40,20 @@ try
         {
             options.Conventions.Add(new RouteTokenTransformerConvention(new CamelCaseParameterTransformer()));
             options.Filters.Add(typeof(LogInvalidModelState));
+            //options.Filters.Add(typeof(HandleJwtToken));
+            options.Filters.Add(typeof(ResponseHeaderSettings));
         })
-        .AddJsonOptions(options =>options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+        })
         .ConfigureApiBehaviorOptions(options =>
         {
             // Disable automatic 400 response
             options.SuppressModelStateInvalidFilter = true;
         });
+    builder.Services.AddValidator();
 
     builder.Services.AddSwagger();
 
@@ -81,6 +91,7 @@ try
     app.UseMiddleware<LogApiInformation>();
 
     //app.UseHttpsRedirection();
+    app.UseRouting();
 
     app.UseStaticFiles("upload");
 
@@ -91,6 +102,10 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+
+    app.UseEndpoints(endpoints =>
+        endpoints.Map("/", context => Task.Run(() => context.Response.Redirect("/swagger/index.html")))
+    );
 
     app.Run();
 

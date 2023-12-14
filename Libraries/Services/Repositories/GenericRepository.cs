@@ -142,9 +142,7 @@ namespace Services.Repositories
             if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
             {
                 var updateEntity = (IUpdateEntity)entity;
-                if (updateEntity.UpdateTime == default)
-                    updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-
+                updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
                 updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
             }
 
@@ -161,9 +159,7 @@ namespace Services.Repositories
                 foreach (var entity in entities)
                 {
                     var updateEntity = (IUpdateEntity)entity;
-                    if (updateEntity.UpdateTime == default)
-                        updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-
+                    updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
                     updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
                 }
             }
@@ -174,15 +170,31 @@ namespace Services.Repositories
 
         public async Task DeleteById(int id, bool saveImmediately = true)
         {
-            var item = DbSetTable.FirstOrDefault(x => x.Id == id);
+            var entity = DbSetTable.FirstOrDefault(x => x.Id == id);
+            if (entity == null)
+                return;
 
-            if (item == null) return;
+            await Delete(entity, saveImmediately);
+        }
 
-            _context.Remove(item);
+        public async Task Delete(TEntity entity, bool saveImmediately = true)
+        {
+            DbSetTable.Remove(entity);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true)
+        {
+            DbSetTable.RemoveRange(entities);
+
+            if (saveImmediately)
+                await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> SaveChanges()
+            => await _context.SaveChangesAsync();
 
         public async Task BulkInsert(IEnumerable<TEntity> entities) => await _context.BulkInsertAsync(entities, _bulkOperation);
 

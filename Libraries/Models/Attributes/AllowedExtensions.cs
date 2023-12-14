@@ -2,23 +2,20 @@
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Models.Attritubes
+namespace Models.Attributes
 {
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AllowedExtensions : ValidationAttribute
     {
         private readonly List<string>? _extensions;
 
-        public AllowedExtensions(UploadFileType fileType)
+        public AllowedExtensions(UploadType fileType)
         {
-            switch (fileType)
+            _extensions = fileType switch
             {
-                case UploadFileType.Excel:
-                    _extensions = new() { ".csv", ".xlsx" };
-                    break;
-                default:
-                    break;
-            }
+                UploadType.Excel => new() { ".csv", ".xlsx" },
+                _ => null,
+            };
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)

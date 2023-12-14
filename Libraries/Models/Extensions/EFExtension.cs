@@ -34,10 +34,10 @@ namespace Models.Extensions
 
             propertyBuilder.HasConversion(
                 x => JsonSerializer.Serialize(x, jsonOptions),
-                x => JsonSerializer.Deserialize<IEnumerable<TProperty>>(x, jsonOptions),
+                x => JsonSerializer.Deserialize<IEnumerable<TProperty>>(x, jsonOptions)!,
                 new ValueComparer<IEnumerable<TProperty>>(
-                    (c1, c2) => c1.SequenceEqual(c2),
-                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    (c1, c2) => c1!.SequenceEqual(c2!),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
                     c => c.ToList())
             );
         }

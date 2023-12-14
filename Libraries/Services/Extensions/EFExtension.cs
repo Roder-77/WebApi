@@ -1,11 +1,7 @@
 ﻿using Common.Enums;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Models;
 using Models.DataModels;
 using System.Linq.Expressions;
-using System.Reflection;
-using Z.EntityFramework.Extensions;
 
 namespace Services.Extensions
 {
@@ -19,16 +15,15 @@ namespace Services.Extensions
         /// <param name="sortType">排序類型</param>
         /// <param name="expression">排序表達式</param>
         /// <returns></returns>
-        public static IOrderedQueryable<TEntity> Order<TEntity>(this IQueryable<TEntity> query, SortType sortType, Expression<Func<TEntity, object>> expression)
+        public static IOrderedQueryable<TEntity> DynamicOrderBy<TEntity>(this IQueryable<TEntity> query, SortType sortType, Expression<Func<TEntity, object>> expression)
             where TEntity : BaseDataModel
         {
-            if (query is IOrderedQueryable<TEntity>)
-            {
-                var orderedQuery = (IOrderedQueryable<TEntity>)query;
-                return sortType == SortType.ASC ? orderedQuery.ThenBy(expression) : orderedQuery.ThenByDescending(expression);
-            }
+            var IsSortByASC = sortType == SortType.ASC;
 
-            return sortType == SortType.ASC ? query.OrderBy(expression) : query.OrderByDescending(expression);
+            if (query is IOrderedQueryable<TEntity> orderedQuery)
+                return IsSortByASC ? orderedQuery.ThenBy(expression) : orderedQuery.ThenByDescending(expression);
+
+            return IsSortByASC ? query.OrderBy(expression) : query.OrderByDescending(expression);
         }
 
         /// <summary>
@@ -40,7 +35,7 @@ namespace Services.Extensions
         /// <param name="sortCondition">排序條件</param>
         /// <param name="customOrder">客製排序 (排序為子表欄位時使用)</param>
         /// <returns></returns>
-        public static IQueryable<TEntity> Order<TEntity, TEnum>(this IQueryable<TEntity> query, SortCondition<TEnum>? sortCondition, Func<IQueryable<TEntity>, IQueryable<TEntity>>? customOrder = null)
+        public static IQueryable<TEntity> DynamicOrderBy<TEntity, TEnum>(this IQueryable<TEntity> query, SortCondition<TEnum>? sortCondition, Func<IQueryable<TEntity>, IQueryable<TEntity>>? customOrder = null)
             where TEntity : BaseDataModel
             where TEnum : struct
         {
@@ -56,7 +51,7 @@ namespace Services.Extensions
                 return customOrder(query);
             }
 
-            return query.Order(sortCondition.SortType!.Value, orderExpression);
+            return query.DynamicOrderBy(sortCondition.SortType!.Value, orderExpression);
         }
 
         /// <summary>

@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using Common.Enums;
+using Microsoft.AspNetCore.Http.Extensions;
+using Models.Exceptions;
 using Models.Response;
 using System.Net;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -59,17 +62,32 @@ namespace WebApi.Middleware
 
         private async Task LogResponse(HttpContext context, Exception ex)
         {
-            var (statusCode, code, message) = ex switch
+            var (statusCode, code, message) = (0, 0, string.Empty);
+            object? data = null;
+
+            if (ex is CustomizeException)
             {
-                // add costomize exception
-                NullReferenceException => ((int)HttpStatusCode.NotFound, 0, ""),
-                _ => ((int)HttpStatusCode.InternalServerError, 0, ex.Message),
-            };
+                var customizeEx = (ex as CustomizeException)!;
+                (statusCode, code, message, data) = ((int)customizeEx.statusCode, (int)customizeEx.code, customizeEx.Message, customizeEx.data);
+            }
+            else
+            {
+                (code, message) = ((int)ExceptionCode.Error, ex.Message);
+                statusCode = ex switch
+                {
+                    UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+                    NotImplementedException => (int)HttpStatusCode.NotImplemented,
+                    _ => (int)HttpStatusCode.InternalServerError,
+                };
+            }
+
+            var response = JsonSerializer.Serialize(
+                new Response<object> { Code = code, Message = message, Data = data },
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }
+            );
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
-
-            var response = JsonSerializer.Serialize(new Response<object> { Code = code, Message = message });
             await context.Response.WriteAsync(response);
 
             _logger.LogError(ex, $"{nameof(LogResponse)} catch");

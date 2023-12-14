@@ -27,7 +27,7 @@ namespace WebApi.Filters
 
             if (type.Assembly.GetName().Name != _assemblyName)
                 return;
-
+            
             var sb = new StringBuilder(schema.Description);
 
             sb.AppendLine("<p>Possible values:</p>");

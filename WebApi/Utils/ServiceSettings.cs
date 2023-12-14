@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Models;
 using Models.DataModels;
 using Services.Extensions;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -22,7 +24,10 @@ namespace WebApi.Utils
 
             services.AddRepository(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("SqlServer"),
+                    options => options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                );
 
                 if (builder.Environment.IsDevelopment())
                 {
@@ -33,30 +38,8 @@ namespace WebApi.Utils
 
             services.AddService();
             //services.AddHostedService();
-
+            services.AddMailService();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        }
-
-        public static void AddDbContext(this WebApplicationBuilder builder)
-        {
-            var config = builder.Configuration;
-
-            builder.Services.AddDbContext<DataContext>(options =>
-            {
-                if (config.HasConnectionString("SqlServer", out var sqlServerConnectionString))
-                    options.UseSqlServer(sqlServerConnectionString);
-                else if (config.HasConnectionString("MySQL", out var mySqlConnectionString))
-                    options.UseMySql(mySqlConnectionString, new MySqlServerVersion(new Version(8, 0, 0)));
-
-                if (builder.Environment.IsDevelopment())
-                    options.EnableSensitiveDataLogging();
-            });
-        }
-
-        private static bool HasConnectionString(this IConfiguration config, string name, out string connectionString)
-        {
-            connectionString = config.GetConnectionString(name);
-            return !string.IsNullOrWhiteSpace(connectionString);
         }
 
         public static void AddSwagger(this IServiceCollection services)
@@ -91,16 +74,12 @@ namespace WebApi.Utils
                 };
 
                 foreach (var xmlFile in xmlFiles)
-                {
-                    var path = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                    options.IncludeXmlComments(path);
-                    // 改使用 UseInlineDefinitionsForEnums
-                    //options.SchemaFilter<SwaggerSchemaEnumDescription>(XDocument.Load(path));
-                }
+                    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
 
                 options.OrderActionsBy(apiDesc => apiDesc.RelativePath);
                 options.SchemaFilter<SwaggerSchemaSortProperty>();
                 options.OperationFilter<SwaggerIgnoreParameter>();
+
                 options.UseInlineDefinitionsForEnums();
                 options.EnableAnnotations();
                 //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -118,7 +97,7 @@ namespace WebApi.Utils
                 //    {
                 //        new OpenApiSecurityScheme
                 //        {
-                //            Reference = new OpenApiReference() { Id = "Bearer", Type = ReferenceType.SecurityScheme }
+                //            Reference = new OpenApiReference() { Id = "Bearer", Type = ReferenceType.SecurityScheme },
                 //        }, Array.Empty<string>()
                 //    }
                 //});
@@ -127,6 +106,10 @@ namespace WebApi.Utils
 
         public static void AddJwtVerification(this WebApplicationBuilder builder)
         {
+            builder.Services
+                .AddOptions<Jwtsettings>()
+                .Configure<IConfiguration>((settings, config) => config.GetSection("JwtSettings").Bind(settings));
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -140,7 +123,7 @@ namespace WebApi.Utils
                         ValidateIssuer = true,
                         ValidIssuer = builder.Configuration.GetValue<string>("JwtSettings:Issuer"),
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JwtSettings:Key")))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JwtSettings:Key")!))
                     };
                 });
 

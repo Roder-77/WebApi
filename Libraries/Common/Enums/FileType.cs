@@ -1,6 +1,6 @@
 ﻿namespace Common.Enums
 {
-    public enum UploadFileType
+    public enum UploadType
     {
         Excel
     }

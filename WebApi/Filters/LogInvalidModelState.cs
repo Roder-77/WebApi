@@ -16,7 +16,7 @@ namespace WebApi.Filters
                 var errors = context.ModelState.Values.SelectMany(m => m.Errors).Select(e => e.ErrorMessage);
                 var message = string.Join(", ", errors);
                 var url = UriHelper.GetDisplayUrl(context.HttpContext.Request);
-                
+
                 logger.LogError($"HttpMethod: {context.HttpContext.Request.Method}, Url: {url}, Message: {message}");
 
                 var result = new Response<object> { Code = 0, Message = message };

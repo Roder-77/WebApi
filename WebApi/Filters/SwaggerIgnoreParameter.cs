@@ -12,7 +12,7 @@ namespace WebApi.Filters
             if (operation == null || context == null || context.ApiDescription?.ParameterDescriptions == null)
                 return;
 
-            var descriptions = context.ApiDescription.ParameterDescriptions.Where(x =>
+            var descriptions = context.ApiDescription.ParameterDescriptions.Where(x => 
                 (x.Source.Equals(BindingSource.Query) || x.Source.Equals(BindingSource.Form)) &&
                 x.CustomAttributes().Any(y => y.GetType().Equals(typeof(JsonIgnoreAttribute))));
 
