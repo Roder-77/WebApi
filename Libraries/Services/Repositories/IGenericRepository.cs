@@ -34,11 +34,15 @@ namespace Services.Repositories
 
         Task UpdateRange(IEnumerable<TEntity> entities, bool setUpdater = true);
 
+        Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls, bool setUpdater = true);
+
         Task DeleteById(int id, bool saveImmediately = true);
 
         Task Delete(TEntity entity, bool saveImmediately = true);
 
         Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true);
+
+        Task ExecuteDeleteById(int id);
 
         Task<int> SaveChanges();
 

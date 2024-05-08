@@ -39,7 +39,7 @@ namespace Services.Extensions
 
         public static void AddRepository(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
         {
-            services.AddDbContext<DataContext>(optionsAction);
+            //services.AddDbContext<DataContext>(optionsAction);
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         }

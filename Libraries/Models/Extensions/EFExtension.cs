@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Models.DataModels;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Models.Extensions
 {

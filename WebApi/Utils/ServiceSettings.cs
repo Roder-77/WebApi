@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Models;
 using Models.DataModels;
 using Services.Extensions;
@@ -46,25 +44,19 @@ namespace WebApi.Utils
         {
             services.AddApiVersioning(options =>
             {
-                options.ReportApiVersions = true;
+                options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(), new HeaderApiVersionReader("X-Api-Version"));
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.ApiVersionReader = new UrlSegmentApiVersionReader();
-            });
-
-            services.AddVersionedApiExplorer(options =>
+                options.ReportApiVersions = true;
+            })
+            .AddApiExplorer(options =>
             {
-                // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
-                // note: the specified format code will format the version as "'v'major[.minor][-status]"
                 options.GroupNameFormat = "'v'VVV";
-
-                // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
-                // can also be used to control the format of the API version in route templates
                 options.SubstituteApiVersionInUrl = true;
             });
 
-            services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureApiVersionSwaggerGenOptions>();
-            services.AddEndpointsApiExplorer();
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
             services.AddSwaggerGen(options =>
             {
                 var xmlFiles = new List<string>
@@ -79,6 +71,7 @@ namespace WebApi.Utils
                 options.OrderActionsBy(apiDesc => apiDesc.RelativePath);
                 options.SchemaFilter<SwaggerSchemaSortProperty>();
                 options.OperationFilter<SwaggerIgnoreParameter>();
+                options.OperationFilter<SwaggerDefaultValues>();
 
                 options.UseInlineDefinitionsForEnums();
                 options.EnableAnnotations();

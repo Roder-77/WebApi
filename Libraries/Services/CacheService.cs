@@ -17,6 +17,7 @@ namespace Services
         public async Task<T?> Get<T>(string key) where T : class
         {
             var bytes = await _cache.GetAsync(key);
+
             if (bytes is null)
                 return default;
 
@@ -30,18 +31,13 @@ namespace Services
             var json = JsonSerializer.Serialize(value);
             var bytes = GZipHelper.Zip(json);
 
-            if (options is not null)
-            {
+            if (options is null)
+                await _cache.SetAsync(key, bytes);
+            else
                 await _cache.SetAsync(key, bytes, options);
-                return;
-            }
-
-            await _cache.SetAsync(key, bytes);
         }
 
         public async Task Remove(string key)
-        {
-            await _cache.RemoveAsync(key);
-        }
+            => await _cache.RemoveAsync(key);
     }
 }

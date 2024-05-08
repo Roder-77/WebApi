@@ -98,7 +98,6 @@ namespace Services.Repositories
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).ToPaginationList(page, pageSize);
 
-
         public async Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true)
         {
             var entityType = typeof(TEntity);
@@ -134,7 +133,7 @@ namespace Services.Repositories
             foreach (var entity in entities)
                 await Insert(entity, false, setCreator);
 
-            await _context.BulkSaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task Update(TEntity entity, bool saveImmediately = true, bool setUpdater = true)
@@ -168,6 +167,19 @@ namespace Services.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls, bool setUpdater = true)
+        {
+            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                var now = DateTime.Now.ToTimestamp();
+                setPropertyCalls = setPropertyCalls.Append(x =>
+                   x.SetProperty(y => ((IUpdateEntity)y).UpdateTime, now)
+                    .SetProperty(y => ((IUpdateEntity)y).Updater, setUpdater ? _httpContext.GetMember().Id : 1));
+            }
+
+            await DbSetTable.Where(x => x.Id == id).ExecuteUpdateAsync(setPropertyCalls);
+        }
+
         public async Task DeleteById(int id, bool saveImmediately = true)
         {
             var entity = DbSetTable.FirstOrDefault(x => x.Id == id);
@@ -179,7 +191,7 @@ namespace Services.Repositories
 
         public async Task Delete(TEntity entity, bool saveImmediately = true)
         {
-            DbSetTable.Remove(entity);
+            _context.Remove(entity);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
@@ -187,11 +199,14 @@ namespace Services.Repositories
 
         public async Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true)
         {
-            DbSetTable.RemoveRange(entities);
+            _context.RemoveRange(entities);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
         }
+
+        public async Task ExecuteDeleteById(int id)
+            => await DbSetTable.Where(x => x.Id == id).ExecuteDeleteAsync();
 
         public async Task<int> SaveChanges()
             => await _context.SaveChangesAsync();

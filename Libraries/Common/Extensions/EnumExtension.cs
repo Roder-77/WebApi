@@ -17,6 +17,15 @@ namespace Common.Extensions
             => enumValue.GetAttributeContent();
 
         /// <summary>
+        /// Get enum display name
+        /// </summary>
+        /// <typeparam name="TEnum">Enum type</typeparam>
+        /// <param name="enumValue">Enum value</param>
+        /// <returns></returns>
+        public static string? GetDisplayName<TEnum>(this TEnum? enumValue) where TEnum : struct
+            => enumValue?.GetAttributeContent();
+
+        /// <summary>
         /// Get enum description
         /// </summary>
         /// <typeparam name="TEnum">Enum type</typeparam>
@@ -24,6 +33,15 @@ namespace Common.Extensions
         /// <returns></returns>
         public static string GetDescription<TEnum>(this TEnum enumValue) where TEnum : struct
             => enumValue.GetAttributeContent(AttributeType.Description);
+
+        /// <summary>
+        /// Get enum description
+        /// </summary>
+        /// <typeparam name="TEnum">Enum type</typeparam>
+        /// <param name="enumValue">Enum value</param>
+        /// <returns></returns>
+        public static string? GetDescription<TEnum>(this TEnum? enumValue) where TEnum : struct
+            => enumValue?.GetAttributeContent(AttributeType.Description);
 
         /// <summary>
         /// Get enum display name

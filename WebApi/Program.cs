@@ -1,15 +1,9 @@
 using Common.JsonConverters;
-using edgentauems.Filters;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
-using Models;
 using Models.DataModels;
 using Serilog;
 using Services.Extensions;
-using System.Reflection;
 using System.Text.Json.Serialization;
 using WebApi.Filters;
 using WebApi.Middleware;
@@ -53,6 +47,7 @@ try
             // Disable automatic 400 response
             options.SuppressModelStateInvalidFilter = true;
         });
+
     builder.Services.AddValidator();
 
     builder.Services.AddSwagger();
@@ -61,6 +56,7 @@ try
 
     builder.AddDefaultCors();
 
+    builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
     builder.RegisterDependency();
 
     // Serilog
@@ -70,8 +66,6 @@ try
 
     //app.ApplyDbMigration();
 
-    app.UseApiVersioning();
-
     // Configure the HTTP request pipeline.
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -79,13 +73,8 @@ try
         // Disable swagger schemas at bottom
         options.DefaultModelsExpandDepth(-1);
 
-        var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
-
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            var url = $"/swagger/{description.GroupName}/swagger.json";
-            options.SwaggerEndpoint(url, description.GroupName.ToUpperInvariant());
-        }
+        foreach (var description in app.DescribeApiVersions())
+            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
     });
 
     app.UseMiddleware<LogApiInformation>();
