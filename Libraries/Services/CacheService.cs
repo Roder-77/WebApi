@@ -1,6 +1,5 @@
 ﻿using Common.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
-using System.Text;
 using System.Text.Json;
 
 namespace Services
@@ -14,22 +13,21 @@ namespace Services
             _cache = cache;
         }
 
-        public async Task<T?> Get<T>(string key) where T : class
+        public async Task<T?> Get<T>(string key)
         {
             var bytes = await _cache.GetAsync(key);
-
             if (bytes is null)
                 return default;
 
-            var json = GZipHelper.Unzip(bytes);
+            var json = await GZipHelper.Unzip(bytes);
 
             return JsonSerializer.Deserialize<T>(json);
         }
 
-        public async Task Set<T>(string key, T value, DistributedCacheEntryOptions? options = null) where T : class
+        public async Task Set<T>(string key, T value, DistributedCacheEntryOptions? options = null)
         {
             var json = JsonSerializer.Serialize(value);
-            var bytes = GZipHelper.Zip(json);
+            var bytes = await GZipHelper.Zip(json);
 
             if (options is null)
                 await _cache.SetAsync(key, bytes);

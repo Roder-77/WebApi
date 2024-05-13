@@ -104,18 +104,16 @@ namespace Services.Repositories
             var nowTime = DateTime.Now.ToTimestamp();
             var memberId = setCreator ? _httpContext.GetMember().Id : 1;
 
-            if (typeof(ICreateEntity).IsAssignableFrom(entityType))
+            if (entity is ICreateEntity createEntity)
             {
-                var createEntity = (ICreateEntity)entity;
                 createEntity.Creator = memberId;
 
                 if (createEntity.CreateTime == default)
                     createEntity.CreateTime = nowTime;
             }
 
-            if (typeof(IUpdateEntity).IsAssignableFrom(entityType))
+            if (entity is IUpdateEntity updateEntity)
             {
-                var updateEntity = (IUpdateEntity)entity;
                 updateEntity.Updater = memberId;
 
                 if (updateEntity.UpdateTime == default)
@@ -138,9 +136,8 @@ namespace Services.Repositories
 
         public async Task Update(TEntity entity, bool saveImmediately = true, bool setUpdater = true)
         {
-            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            if (entity is IUpdateEntity updateEntity)
             {
-                var updateEntity = (IUpdateEntity)entity;
                 updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
                 updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
             }
@@ -153,11 +150,10 @@ namespace Services.Repositories
 
         public async Task UpdateRange(IEnumerable<TEntity> entities, bool setUpdater = true)
         {
-            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            if (entities is IEnumerable<IUpdateEntity> updateEntities)
             {
-                foreach (var entity in entities)
+                foreach (IUpdateEntity updateEntity in updateEntities)
                 {
-                    var updateEntity = (IUpdateEntity)entity;
                     updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
                     updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
                 }
