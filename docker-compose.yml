@@ -9,13 +9,13 @@ services:
       dockerfile: ./Dockerfile
     # build image name > name:version
     image: webapi:latest
-    # expose port > port:container port
     networks:
       # network name
       - webapi_app
       # webapi_app:
         # ipv4_address: 172.18.0.2
     ports:
+      # expose port > port:container port
       - 8088:80
       - 488:443
     volumes:
@@ -23,6 +23,7 @@ services:
       # SSL credentials
       - C:/Users/User/.aspnet/https:/https
     environment:
+      #- ASPNETCORE_URLS=http://+:80
       # donet core SSL credential environment settings
       #- ASPNETCORE_URLS=https://+:443;http://+:80
       #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx

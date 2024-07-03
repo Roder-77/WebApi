@@ -26,13 +26,11 @@ namespace Services
 
         public async Task Set<T>(string key, T value, DistributedCacheEntryOptions? options = null)
         {
+            options ??= new();
+
             var json = JsonSerializer.Serialize(value);
             var bytes = await GZipHelper.Zip(json);
-
-            if (options is null)
-                await _cache.SetAsync(key, bytes);
-            else
-                await _cache.SetAsync(key, bytes, options);
+            await _cache.SetAsync(key, bytes, options);
         }
 
         public async Task Remove(string key)

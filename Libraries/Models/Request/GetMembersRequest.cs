@@ -1,5 +1,5 @@
 ﻿namespace Models.Request
 {
-    public class GetMembersRequest : PageModel
+    public class GetMembersRequest : PaginationModel
     { }
 }

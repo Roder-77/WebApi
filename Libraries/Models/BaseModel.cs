@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Models
 {
-    public class PageModel
+    public class PaginationModel
     {
         /// <summary>
         /// 當前頁數

@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK" Version="2.3.55.2" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.304.8" />
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="3.7.300.98" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.12" />
@@ -21,6 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="MiniExcel" Version="1.32.1" />
     <PackageReference Include="Scrutor" Version="4.2.2" />
     <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="8.102.2.4" />
   </ItemGroup>

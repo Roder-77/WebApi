@@ -1,0 +1,5 @@
+﻿# 如果要從更高的目錄繼承 .editorconfig 設定，請移除以下行
+root = true
+
+[*.{cs,csx,vb,vbx,txt,html,htm,css,js,json,yml,yaml,xml,config,ini,sh,ps1,psm1,psd1,ps1xml,psrc1xml,csproj,sln,gitignore,gitattributes,editorconfig,md,markdown,txt,asciidoc,adoc,asc,asciidoc,txt,ipynb,py}]
+charset = utf-8-bom
