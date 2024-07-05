@@ -8,6 +8,7 @@
     <DocumentationFile></DocumentationFile>
     <UserSecretsId>e79f78d0-f450-4b3a-bde5-a7f7ec860db7</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
