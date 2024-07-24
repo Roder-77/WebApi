@@ -5,7 +5,6 @@ using Models.Response;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace WebApi.Middleware
 {
@@ -13,6 +12,8 @@ namespace WebApi.Middleware
     {
         private readonly ILogger<LogApiInformation> _logger;
         private readonly RequestDelegate _next;
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+        private readonly HashSet<string> _sensitiveFields = new(StringComparer.OrdinalIgnoreCase){ "password", "creditCard" };
 
         public LogApiInformation(ILogger<LogApiInformation> logger, RequestDelegate next)
         {
@@ -24,9 +25,7 @@ namespace WebApi.Middleware
         {
             try
             {
-                var request = context.Request;
-
-                await LogRequest(request);
+                await LogRequest(context);
                 await _next(context);
             }
             catch (Exception ex)
@@ -35,33 +34,40 @@ namespace WebApi.Middleware
             }
         }
 
-        private async Task LogRequest(HttpRequest request)
+        private async Task LogRequest(HttpContext context)
         {
+            var request = context.Request;
             var url = UriHelper.GetDisplayUrl(request);
-            var cloneBody = new MemoryStream();
+            var body = string.Empty;
 
-            await request.Body.CopyToAsync(cloneBody);
-            cloneBody.Seek(0, SeekOrigin.Begin);
-
-            var reader = new StreamReader(cloneBody);
-            var body = await reader.ReadToEndAsync();
-            cloneBody.Seek(0, SeekOrigin.Begin);
-            request.Body = cloneBody;
-
-            if (!body.Contains("form-data"))
+            if (!request.HasFormContentType)
             {
-                _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
-                return;
+                request.EnableBuffering();
+                var reader = new StreamReader(request.Body, leaveOpen: true);
+                body = await reader.ReadToEndAsync();
+                request.Body.Position = 0;
             }
+            else
+            {
+                var form = await request.ReadFormAsync();
+                var formDict = form.ToDictionary(
+                    k => k.Key,
+                    v => _sensitiveFields.Contains(v.Key) ? "********" : v.Value.Count > 1 ? (object)v.Value.ToList() : v.Value.ToString()
+                );
+                
+                foreach (var file in form.Files)
+                    formDict[file.Name] = new { file.FileName, file.Length };
 
-            var fileNames = Regex.Matches(body, "(?<=filename=\").*(?=\")", RegexOptions.Multiline)
-                    .Select(x => x.Value);
-
-            _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, file name: {string.Join(", ", fileNames)}");
+                body = JsonSerializer.Serialize(formDict, _jsonSerializerOptions);
+            }
+            
+            _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
         }
 
         private async Task LogResponse(HttpContext context, Exception ex)
         {
+            _logger.LogError(ex, $"{nameof(LogResponse)} catch");
+
             var (statusCode, code, message) = (0, 0, string.Empty);
             object? data = null;
 
@@ -81,16 +87,10 @@ namespace WebApi.Middleware
                 };
             }
 
-            var response = JsonSerializer.Serialize(
-                new Response<object> { Code = code, Message = message, Data = data },
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }
-            );
+            var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, _jsonSerializerOptions);
 
-            context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsync(response);
-
-            _logger.LogError(ex, $"{nameof(LogResponse)} catch");
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }
