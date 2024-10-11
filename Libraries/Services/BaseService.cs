@@ -8,26 +8,24 @@ using Microsoft.Extensions.Logging;
 using MiniExcelLibs;
 using MiniExcelLibs.OpenXml;
 using Models.DataModels;
+using Services.Extensions;
 using Services.Repositories;
 
 namespace Services
 {
-    public class BaseService<TEntity>
-        where TEntity : BaseDataModel
+    public class BaseService
     {
         protected readonly HttpContext _httpContext;
 
-        protected readonly ILogger<BaseService<TEntity>> _logger;
-        protected readonly IGenericRepository<TEntity> _repository;
+        protected readonly ILogger<BaseService> _logger;
 
         protected readonly IMapper _mapper;
 
-        public BaseService(IHttpContextAccessor httpContextAccessor)
+        public BaseService(IServiceProvider serviceProvider)
         {
-            _httpContext = httpContextAccessor.HttpContext!;
-            _logger = _httpContext.RequestServices.GetRequiredService<ILogger<BaseService<TEntity>>>();
-            _repository = _httpContext.RequestServices.GetRequiredService<IGenericRepository<TEntity>>();
-            _mapper = _httpContext.RequestServices.GetRequiredService<IMapper>();
+            _httpContext = serviceProvider.SetDefaultHttpContext().HttpContext!;
+            _logger = serviceProvider.GetRequiredService<ILogger<BaseService>>();
+            _mapper = serviceProvider.GetRequiredService<IMapper>();
         }
 
         /// <summary>
@@ -44,6 +42,22 @@ namespace Services
                 throw new NotImplementedException("不支援的媒體類型");
 
             return new FileStreamResult(memoryStream, contentType) { FileDownloadName = fileName };
+        }
+
+        /// <summary>
+        /// Get file content result
+        /// </summary>
+        /// <param name="bytes">byte array</param>
+        /// <param name="fileName">file name</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">不支援的媒體類型</exception>
+        protected FileContentResult GetFileContentResult(byte[] bytes, string fileName)
+        {
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fileName, out var contentType))
+                throw new NotImplementedException("不支援的媒體類型");
+
+            return new FileContentResult(bytes, contentType) { FileDownloadName = fileName };
         }
 
         /// <summary>
@@ -80,39 +94,41 @@ namespace Services
                 throw new ArgumentException("items is empty");
 
             var memoryStream = new MemoryStream();
-            using (var zipStream = new ZipOutputStream(memoryStream))
+            using var zipStream = new ZipOutputStream(memoryStream);
+
+            zipStream.SetLevel(compressionLevel);
+
+            foreach (var item in items)
             {
-                zipStream.SetLevel(compressionLevel);
+                var entry = new ZipEntry(item.fileName);
+                entry.DateTime = DateTime.Now;
+                zipStream.PutNextEntry(entry);
 
-                foreach (var item in items)
-                {
-                    var entry = new ZipEntry(item.fileName);
-                    entry.DateTime = DateTime.Now;
-                    zipStream.PutNextEntry(entry);
-
-                    await item.memoryStream.CopyToAsync(zipStream);
-                }
-
-                zipStream.Finish();
-
-                memoryStream.Position = 0;
-                var byteArray = memoryStream.ToArray();
-
-                zipStream.Close();
-                return byteArray;
+                await item.memoryStream.CopyToAsync(zipStream);
             }
+
+            memoryStream.Position = 0;
+            return memoryStream.ToArray();
         }
 
         /// <summary>
-        /// Get zip file stream result
+        /// Get zip file content result
         /// </summary>
         /// <param name="items">memory stream with file name list</param>
         /// <param name="fileName">zip file name</param>
         /// <returns></returns>
-        protected async Task<FileStreamResult> GetZipFileStreamResult(IEnumerable<(string fileName, MemoryStream memoryStream)> items, string fileName)
+        protected async Task<FileContentResult> GetZipFileContentResult(IEnumerable<(string fileName, MemoryStream memoryStream)> items, string fileName)
+            => GetFileContentResult(await CompressToZipFile(items), fileName);
+    }
+
+    public class BaseService<TEntity> : BaseService
+        where TEntity : BaseDataModel
+    {
+        protected readonly IGenericRepository<TEntity> _repository;
+
+        public BaseService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            var byteArray = await CompressToZipFile(items);
-            return GetFileStreamResult(new MemoryStream(byteArray), fileName);
+            _repository = serviceProvider.GetRequiredService<IGenericRepository<TEntity>>();
         }
     }
 }

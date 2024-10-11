@@ -2,12 +2,15 @@
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Models;
 using Models.DataModels;
 using Models.Request.Validators;
@@ -20,9 +23,42 @@ namespace Services.Extensions
 {
     public static class ServiceExtension
     {
+        private static bool HasConnectionString(this IConfiguration config, string name, out string? connectionString)
+        {
+            connectionString = config.GetConnectionString(name);
+            return !string.IsNullOrWhiteSpace(connectionString);
+        }
+
+        public static void RegisterDependency(this WebApplicationBuilder builder)
+        {
+            var services = builder.Services;
+
+            services.AddDbContext<DataContext>(options =>
+            {
+                if (builder.Configuration.HasConnectionString("SqlServer", out var sqlServerConnectionString))
+                    options.UseSqlServer(sqlServerConnectionString, options => options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+                else if (builder.Configuration.HasConnectionString("MySQL", out var mySqlConnectionString))
+                    options.UseMySql(mySqlConnectionString, new MySqlServerVersion(new Version(8, 0, 0)));
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging();
+                    options.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.MultipleNavigationProperties));
+                }
+            });
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            services.AddService();
+
+            services.AddMailService();
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        }
+
         public static void AddService(this IServiceCollection services)
         {
-            var baseServiceType = typeof(BaseService<>);
+            var baseServiceType = typeof(BaseService);
 
             services.Scan(scan =>
                 scan.FromAssembliesOf(baseServiceType)
@@ -32,16 +68,10 @@ namespace Services.Extensions
                     .WithScopedLifetime()
             );
 
-            services.AddSingleton<JwtService>();
+            services.AddScoped<CommonService>();
+
             services.AddSingleton<CallApiService>();
-            services.AddSingleton<CommonService>();
-        }
-
-        public static void AddRepository(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
-        {
-            //services.AddDbContext<DataContext>(optionsAction);
-
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddSingleton<JwtService>();
         }
 
         public static void AddHostedService(this IServiceCollection services)
@@ -84,6 +114,33 @@ namespace Services.Extensions
             });
 
             services.AddHangfireServer(options => options.WorkerCount = 10);
+        }
+
+        public static void AddDefaultCors(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy
+                        .SetIsOriginAllowed(origin => {
+                            var allowedHosts = builder.Configuration.GetValue<string>("AllowedHosts");
+                            if (string.IsNullOrWhiteSpace(allowedHosts))
+                                return false;
+
+                            if (allowedHosts == "*")
+                                return true;
+
+                            var originHost = new Uri(origin).Host;
+                            var allowedHostParts = allowedHosts.Split(';');
+
+                            return allowedHostParts.Any(host => originHost.Equals(host, StringComparison.OrdinalIgnoreCase));
+                        })
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
         }
 
         public static void AddValidator(this IServiceCollection services)

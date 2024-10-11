@@ -14,30 +14,22 @@ namespace WebApi.Controllers
     [Route("api/v{version:apiVersion}/[controller]s")]
     [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(ErrorResponse))]
     [SwaggerResponse((int)HttpStatusCode.Unauthorized, unauthorized, typeof(ErrorResponse))]
+    [SwaggerResponse((int)HttpStatusCode.NotAcceptable, notAcceptable, typeof(ErrorResponse))]
+    [SwaggerResponse((int)HttpStatusCode.UnprocessableEntity, unprocessableEntity, typeof(ErrorResponse))]
     [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
-    public class BaseController : ControllerBase
+    public class BaseController : Controller
     {
-        private const string badRequest = "Bad request";
+        private const string badRequest = "Bad Request";
         private const string unauthorized = "Unauthorized";
-        private const string internalServerError = "Internal server error";
+        private const string notAcceptable = "Not Acceptable";
+        private const string unprocessableEntity = "Unprocessable Entity";
+        private const string internalServerError = "Internal Server Error";
 
-        protected Response<object> Response200 = new()
-        {
-            Code = 1, // customize
-            Message = "Success", // customize
-        };
+        protected Response<object> Response200 = new() { Code = 1, Message = "Success" };
 
-        protected Response<object> Response404 = new()
-        {
-            Code = 0,
-            Message = "Not Found",
-        };
+        protected Response<object> Response404 = new() { Code = 0, Message = "Not Found" };
 
-        protected Response<object> Response500 = new()
-        {
-            Code = 0,
-            Message = "Internal server error",
-        };
+        protected Response<object> Response500 = new() { Code = 0, Message = "Internal Server Error" };
 
         protected class ErrorResponse : DefaultResponse
         {

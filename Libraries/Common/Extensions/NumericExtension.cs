@@ -30,5 +30,26 @@
         /// <returns></returns>
         public static decimal RoundAwayFromZero(this decimal source, int decimals = 3)
             => Math.Round(source, decimals, MidpointRounding.AwayFromZero);
+
+        /// <summary>
+        /// 四捨五入
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="decimals"></param>
+        /// <returns></returns>
+        public static decimal? RoundAwayFromZero(this decimal? source, int decimals = 3)
+        {
+            if (!source.HasValue)
+                return source;
+
+            return RoundAwayFromZero(source.Value, decimals);
+        }
+
+        /// <summary>
+        /// 是否為整數
+        /// </summary>
+        /// <param name="source">來源數值</param>
+        /// <returns></returns>
+        public static bool IsInteger(this decimal source) => source == Math.Floor(source);
     }
 }

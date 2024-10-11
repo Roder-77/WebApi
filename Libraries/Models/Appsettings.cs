@@ -4,12 +4,12 @@ namespace Models
 {
     public class Appsettings
     {
-        public Jwtsettings JwtSettings { get; set; }
+        public JwtSettings JwtSettings { get; set; }
 
         public MailSettings Mail { get; set; }
     }
 
-    public class Jwtsettings
+    public class JwtSettings
     {
         public string Issuer { get; set; }
 

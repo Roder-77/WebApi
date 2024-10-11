@@ -20,6 +20,21 @@ namespace Models
         public int PageSize { get; set; } = 20;
     }
 
+    public class PaginationSortModel<TEnum> : SortCondition<TEnum> where TEnum : struct
+    {
+        /// <summary>
+        /// 當前頁數
+        /// </summary>
+        [DefaultValue(1)]
+        public int Page { get; set; } = 1;
+
+        /// <summary>
+        /// 每頁筆數
+        /// </summary>
+        [DefaultValue(20)]
+        public int PageSize { get; set; } = 20;
+    }
+
     public class SortCondition<TEnum> where TEnum : struct
     {
         /// <summary>

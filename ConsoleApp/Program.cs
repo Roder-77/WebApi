@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Models.DataModels;
 using Serilog;
 using Services.Extensions;
+using Services.Repositories;
 
 try
 {
@@ -22,7 +24,9 @@ try
 
     builder.ConfigureServices(services =>
     {
-        services.AddRepository(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
+
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         services.AddService();
 

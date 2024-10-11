@@ -10,7 +10,7 @@ namespace Services
 {
     public class JwtService
     {
-        private readonly Jwtsettings _jwtSettings;
+        private readonly JwtSettings _jwtSettings;
 
         public JwtService(IOptions<Appsettings> appsettings)
         {

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Services;
 using System.Text.Json;
+using WebApi.Extensions;
 
 namespace edgentauems.Filters
 {
@@ -17,13 +19,11 @@ namespace edgentauems.Filters
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // ignore sign in
-            //var actionName = ((ControllerActionDescriptor)context.ActionDescriptor).ActionName;
-            //if (actionName == nameof(AuthorizedController.SignIn))
-            //{
-            //    await next();
-            //    return;
-            //}
+            if (context.HasActionAttribute<AllowAnonymousAttribute>())
+            {
+                await next();
+                return;
+            }
 
             var memberId = context.HttpContext.User.FindFirst("memberId")?.Value;
 

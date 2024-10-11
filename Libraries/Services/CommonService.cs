@@ -1,82 +1,58 @@
-﻿using Microsoft.Extensions.Logging;
-using Models;
-using Models.DataModels;
-using Services.Extensions;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text.Json;
+﻿using Common.Helpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Models.Exceptions;
 
 namespace Services
 {
-    public class CommonService
+    public class CommonService : BaseService
     {
-        private readonly ILogger<CommonService> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public CommonService(ILogger<CommonService> logger)
+        public CommonService(
+            IWebHostEnvironment env,
+            IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _logger = logger;
+            _env = env;
         }
 
-        //private Expression<Func<TEntity, object>>? GetOrderByExpression<TEntity>(string propertyName) where TEntity : BaseDataModel
-        //{
-        //    var type = typeof(TEntity);
-        //    var propertyInfo = type.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+        /// <summary>
+        /// 上傳檔案
+        /// </summary>
+        /// <param name="file">檔案</param>
+        /// <returns></returns>
+        /// <exception cref="ForbiddenException"></exception>
+        public async Task<(string fileName, string name, string url)> UploadFile(IFormFile file)
+        {
+            if (file.Length <= 0)
+                throw new ForbiddenException($"{nameof(UploadFile)}, name: {file.Name} file size is less than or equal to 0");
 
-        //    if (propertyInfo is null)
-        //    {
-        //        _logger.LogWarning($"{nameof(GetOrderByExpression)}, 沒有對應欄位，無法篩選 property name: {propertyName}, data model: {nameof(TEntity)}");
-        //        return null;
-        //    }
+            var defaultPath = "uploads";
+            var fileExtension = Path.GetExtension(file.FileName);
+            var folderPath = fileExtension switch
+            {
+                ".jpg" or ".jpeg" or ".png" => Path.Combine(defaultPath, "images"),
+                ".pdf" => Path.Combine(defaultPath, "pdf"),
+                ".mp4" => Path.Combine(defaultPath, "videos"),
+                _ => throw new NotImplementedException("不支援上傳此副檔名"),
+            };
 
-        //    var parameter = Expression.Parameter(type);
-        //    var member = Expression.Property(parameter, propertyInfo);
-        //    var conversion = Expression.Convert(member, typeof(object));
+            var path = Path.Combine(_env.WebRootPath, folderPath);
 
-        //    return Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
-        //}
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
 
-        //public Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? GenerateOrderedFunc<TEntity, TEnum>(OrderedCondition<TEnum> orderedCondition)
-        //    where TEntity : BaseDataModel
-        //    where TEnum : Enum
-        //{
-        //    var orderExpression = GetOrderByExpression<TEntity>(orderedCondition.PropertyName);
-        //    if (orderExpression is null)
-        //        return null;
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
 
-        //    return x => x.Order(orderedCondition.SortType, orderExpression);
-        //}
+            var hash = HashHelper.Generate("SHA1", memoryStream.ToArray());
+            var fileName = $"{hash}{fileExtension}";
+            var url = $"/{folderPath.Replace("\\", "/")}/{fileName}";
 
-        //public Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? GenerateOrderedFunc<TEntity, TEnum>(List<OrderedCondition<TEnum>> orderedConditions)
-        //    where TEntity : BaseDataModel
-        //    where TEnum : Enum
-        //{
-        //    var expressions = new Dictionary<SortType, Expression<Func<TEntity, object>>>();
+            using var fileStream = File.Create(Path.Combine(path, fileName));
+            await file.CopyToAsync(fileStream);
 
-        //    foreach (var condition in orderedConditions)
-        //    {
-        //        var orderExpression = GetOrderByExpression<TEntity>(condition.PropertyName);
-        //        if (orderExpression is null)
-        //            continue;
-
-        //        expressions.Add(condition.SortType, orderExpression);
-        //    }
-
-        //    if (!expressions.Any())
-        //    {
-        //        _logger.LogWarning($"{nameof(GenerateOrderedFunc)}, 無對應任何表達式 conditions: {JsonSerializer.Serialize(orderedConditions)}");
-        //        return null;
-        //    }
-
-        //    return x => {
-        //        IOrderedQueryable<TEntity>? order = null;
-
-        //        foreach (var expression in expressions)
-        //            order = order is null
-        //                ? x.Order(expression.Key, expression.Value)
-        //                : order.Order(expression.Key, expression.Value);
-
-        //        return order!;
-        //    };
-        //}
+            return (fileName, file.FileName, url);
+        }
     }
 }

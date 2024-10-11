@@ -8,7 +8,7 @@ namespace Services
 {
     public class MemberService : BaseService<Member>
     {
-        public MemberService(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        public MemberService(IServiceProvider serviceProvider) : base(serviceProvider)
         { }
 
         /// <summary>

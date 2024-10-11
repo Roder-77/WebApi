@@ -1,4 +1,4 @@
-using Common.JsonConverters;
+﻿using Common.JsonConverters;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Models.DataModels;

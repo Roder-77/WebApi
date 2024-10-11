@@ -16,30 +16,6 @@ namespace WebApi.Utils
 {
     public static class ServiceSettings
     {
-        public static void RegisterDependency(this WebApplicationBuilder builder)
-        {
-            var services = builder.Services;
-
-            services.AddRepository(options =>
-            {
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("SqlServer"),
-                    options => options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                );
-
-                if (builder.Environment.IsDevelopment())
-                {
-                    options.EnableSensitiveDataLogging();
-                    options.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.MultipleNavigationProperties));
-                }
-            });
-
-            services.AddService();
-            //services.AddHostedService();
-            services.AddMailService();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        }
-
         public static void AddSwagger(this IServiceCollection services)
         {
             services.AddApiVersioning(options =>
@@ -99,10 +75,7 @@ namespace WebApi.Utils
 
         public static void AddJwtVerification(this WebApplicationBuilder builder)
         {
-            builder.Services
-                .AddOptions<Jwtsettings>()
-                .Configure<IConfiguration>((settings, config) => config.GetSection("JwtSettings").Bind(settings));
-
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -121,30 +94,6 @@ namespace WebApi.Utils
                 });
 
             builder.Services.AddAuthorization();
-        }
-
-        public static void AddDefaultCors(this WebApplicationBuilder builder)
-        {
-            builder.Services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy =>
-                {
-                    policy
-                        .SetIsOriginAllowed(origin => {
-                            var allowedHosts = builder.Configuration.GetValue<string>("AllowedHosts");
-                            if (allowedHosts == "*")
-                                return true;
-
-                            var originHost = new Uri(origin).Host;
-                            var allowedHostParts = allowedHosts!.Split(';');
-
-                            return allowedHostParts.Any(host => originHost.Equals(host, StringComparison.OrdinalIgnoreCase));
-                        })
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-            });
         }
     }
 }

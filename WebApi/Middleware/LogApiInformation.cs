@@ -88,9 +88,10 @@ namespace WebApi.Middleware
             }
 
             var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, _jsonSerializerOptions);
-
+            
+            context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsJsonAsync(response);
+            await context.Response.WriteAsync(response);
         }
     }
 }
