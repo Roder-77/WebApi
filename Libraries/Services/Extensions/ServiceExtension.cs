@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Models;
 using Models.DataModels;
-using Models.Request.Validators;
+using Models.Requests.Validators;
 using Scrutor;
 using Services.HostedServices;
 using Services.Repositories;

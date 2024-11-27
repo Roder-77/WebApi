@@ -24,7 +24,7 @@ namespace Models.DataModels
         public int Updater { get; set; }
     }
 
-    public interface ISoftDelete
+    public interface ISoftDeleteEntity
     {
         /// <summary>
         /// 是否刪除

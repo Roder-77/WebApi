@@ -2,6 +2,9 @@
 {
     public enum UploadType
     {
-        Excel
+        Excel,
+        Image,
+        PDF,
+        Video,
     }
 }

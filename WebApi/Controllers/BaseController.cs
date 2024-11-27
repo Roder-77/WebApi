@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Models.Response;
+using Models.Responses;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.Net;

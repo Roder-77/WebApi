@@ -1,4 +1,4 @@
-﻿using Models.Response;
+﻿using Models.Responses;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 

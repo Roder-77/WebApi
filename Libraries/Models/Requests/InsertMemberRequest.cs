@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Models.Request
+namespace Models.Requests
 {
     public class InsertMemberRequest
     {

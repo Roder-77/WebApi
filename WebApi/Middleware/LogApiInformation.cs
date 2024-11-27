@@ -1,7 +1,7 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Http.Extensions;
 using Models.Exceptions;
-using Models.Response;
+using Models.Responses;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Json;

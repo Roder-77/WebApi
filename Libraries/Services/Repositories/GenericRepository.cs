@@ -11,7 +11,7 @@ using Models.DataModels;
 using Services.Extensions;
 using System.Data;
 using System.Linq.Expressions;
-using Z.BulkOperations;
+using System.Security.Claims;
 using static Services.Extensions.PaginationExtension;
 
 namespace Services.Repositories
@@ -19,23 +19,21 @@ namespace Services.Repositories
     public class GenericRepository<TEntity> : IGenericRepository<TEntity>
         where TEntity : BaseDataModel
     {
-        private readonly MemoryContext _context;
+        private readonly DataContext _context;
         private readonly HttpContext _httpContext;
+        private readonly ClaimsPrincipal _user;
 
         private readonly IServiceProvider _serviceProvider;
 
-        private Action<BulkOperation> _bulkOperation => options =>
-        {
-            options.BatchSize = 100;
-            options.AutoMapOutputDirection = false;
-        };
-
-        public GenericRepository(MemoryContext context, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor)
+        public GenericRepository(DataContext context, IServiceProvider serviceProvider)
         {
             _context = context;
             _serviceProvider = serviceProvider;
-            _httpContext = httpContextAccessor.HttpContext!;
+            _httpContext = serviceProvider.SetDefaultHttpContext().HttpContext!;
+            _user = _httpContext.User;
         }
+
+        private int _id => int.Parse(_user.FindFirstValue("Id")!);
 
         public DatabaseFacade Database => _context.Database;
         public DbSet<TEntity> DbSetTable => _context.Set<TEntity>();
@@ -49,9 +47,9 @@ namespace Services.Repositories
         {
             var query = hasTracking ? DbSetTable : Table;
 
-            if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
+            if (typeof(ISoftDeleteEntity).IsAssignableFrom(typeof(TEntity)))
                 query = query
-                    .Cast<ISoftDelete>()
+                    .Cast<ISoftDeleteEntity>()
                     .Where(x => !x.IsDeleted)
                     .Cast<TEntity>();
 
@@ -98,11 +96,18 @@ namespace Services.Repositories
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).ToPaginationList(page, pageSize);
 
+        public async Task<int> Count(
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicate, include, order, hasTracking).CountAsync();
+
+
         public async Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true)
         {
-            var entityType = typeof(TEntity);
             var nowTime = DateTime.Now.ToTimestamp();
-            var memberId = setCreator ? _httpContext.GetMember().Id : 1;
+            var memberId = setCreator ? _id : 1;
 
             if (entity is ICreateEntity createEntity)
             {
@@ -139,7 +144,7 @@ namespace Services.Repositories
             if (entity is IUpdateEntity updateEntity)
             {
                 updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-                updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
+                updateEntity.Updater = setUpdater ? _id : 1;
             }
 
             _context.Update(entity);
@@ -155,7 +160,7 @@ namespace Services.Repositories
                 foreach (IUpdateEntity updateEntity in updateEntities)
                 {
                     updateEntity.UpdateTime = DateTime.Now.ToTimestamp();
-                    updateEntity.Updater = setUpdater ? _httpContext.GetMember().Id : 1;
+                    updateEntity.Updater = setUpdater ? _id : 1;
                 }
             }
 
@@ -163,26 +168,16 @@ namespace Services.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls, bool setUpdater = true)
-        {
-            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
-            {
-                var now = DateTime.Now.ToTimestamp();
-                setPropertyCalls = setPropertyCalls.Append(x =>
-                   x.SetProperty(y => ((IUpdateEntity)y).UpdateTime, now)
-                    .SetProperty(y => ((IUpdateEntity)y).Updater, setUpdater ? _httpContext.GetMember().Id : 1));
-            }
-
-            await DbSetTable.Where(x => x.Id == id).ExecuteUpdateAsync(setPropertyCalls);
-        }
-
         public async Task DeleteById(int id, bool saveImmediately = true)
         {
-            var entity = DbSetTable.FirstOrDefault(x => x.Id == id);
-            if (entity == null)
-                return;
+            var item = DbSetTable.FirstOrDefault(x => x.Id == id);
 
-            await Delete(entity, saveImmediately);
+            if (item == null) return;
+
+            _context.Remove(item);
+
+            if (saveImmediately)
+                await _context.SaveChangesAsync();
         }
 
         public async Task Delete(TEntity entity, bool saveImmediately = true)
@@ -195,29 +190,24 @@ namespace Services.Repositories
 
         public async Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true)
         {
-            _context.RemoveRange(entities);
+            DbSetTable.RemoveRange(entities);
 
             if (saveImmediately)
                 await _context.SaveChangesAsync();
         }
 
-        public async Task ExecuteDeleteById(int id)
-            => await DbSetTable.Where(x => x.Id == id).ExecuteDeleteAsync();
+        public async Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls)
+        {
+            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                var now = DateTime.Now.ToTimestamp();
+                setPropertyCalls = setPropertyCalls.Append(x =>
+                   x.SetProperty(y => ((IUpdateEntity)y).UpdateTime, now)
+                    .SetProperty(y => ((IUpdateEntity)y).Updater, _id));
+            }
 
-        public async Task<int> SaveChanges()
-            => await _context.SaveChangesAsync();
-
-        public async Task BulkInsert(IEnumerable<TEntity> entities) => await _context.BulkInsertAsync(entities, _bulkOperation);
-
-        public async Task BulkInsert(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options) => await _context.BulkInsertAsync(entities, options);
-
-        public async Task BulkUpdate(IEnumerable<TEntity> entities) => await _context.BulkUpdateAsync(entities, _bulkOperation);
-
-        public async Task BulkUpdate(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options) => await _context.BulkUpdateAsync(entities, options);
-
-        public async Task BulkDelete(IEnumerable<TEntity> entities) => await _context.BulkDeleteAsync(entities, _bulkOperation);
-
-        public async Task BulkDelete(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options) => await _context.BulkDeleteAsync(entities, options);
+            await DbSetTable.Where(x => x.Id == id).ExecuteUpdateAsync(setPropertyCalls);
+        }
 
         public async Task<int> Execute(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
         {
@@ -235,7 +225,7 @@ namespace Services.Repositories
             return await connection.QueryAsync<T>(sql, parameter, transaction, commandTimeout, commandType);
         }
 
-        public async Task<T> QueryFirstOrDefault<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
+        public async Task<T?> QueryFirstOrDefault<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null)
         {
             var connection = Database.GetDbConnection();
             var transaction = Database.CurrentTransaction?.GetDbTransaction();

@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 #nullable disable warnings
 
-namespace Models.Response
+namespace Models.Responses
 {
     public class Response
     {

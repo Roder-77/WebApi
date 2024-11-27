@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Models.DataModels;
 using System.Data;
 using System.Linq.Expressions;
-using Z.BulkOperations;
 using static Services.Extensions.PaginationExtension;
 
 namespace Services.Repositories
@@ -26,6 +25,8 @@ namespace Services.Repositories
 
         Task<PaginationList<TEntity>> GetPaginationList(int page, int pageSize, Expression<Func<TEntity, bool>>? predicate = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null, Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null, bool hasTracking = false);
 
+        Task<int> Count(Expression<Func<TEntity, bool>>? predicate = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null, Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null, bool hasTracking = false);
+
         Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true);
 
         Task InsertRange(IEnumerable<TEntity> entities, bool setCreator = true);
@@ -34,7 +35,7 @@ namespace Services.Repositories
 
         Task UpdateRange(IEnumerable<TEntity> entities, bool setUpdater = true);
 
-        Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls, bool setUpdater = true);
+        Task ExecuteUpdateById(int? id, Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls);
 
         Task DeleteById(int id, bool saveImmediately = true);
 
@@ -42,26 +43,12 @@ namespace Services.Repositories
 
         Task DeleteRange(IEnumerable<TEntity> entities, bool saveImmediately = true);
 
-        Task ExecuteDeleteById(int id);
-
-        Task<int> SaveChanges();
-
-        Task BulkInsert(IEnumerable<TEntity> entities);
-
-        Task BulkInsert(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options);
-
-        Task BulkUpdate(IEnumerable<TEntity> entities);
-
-        Task BulkUpdate(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options);
-
-        Task BulkDelete(IEnumerable<TEntity> entities);
-
-        Task BulkDelete(IEnumerable<TEntity> entities, Action<BulkOperation<TEntity>> options);
-
         Task<int> Execute(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null);
 
         Task<IEnumerable<T>> Query<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null);
 
-        Task<T> QueryFirstOrDefault<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null);
+        Task<T?> QueryFirstOrDefault<T>(string sql, object parameter, int? commandTimeout = null, CommandType? commandType = null);
+
+        Task ExecuteByTransaction(Func<Task> function, string errorMessage, IsolationLevel? isolationLevel = null);
     }
 }

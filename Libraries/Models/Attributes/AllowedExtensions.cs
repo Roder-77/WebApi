@@ -8,14 +8,32 @@ namespace Models.Attributes
     public class AllowedExtensions : ValidationAttribute
     {
         private readonly List<string>? _extensions;
+        private readonly int? _sizelimit;
 
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="fileType">檔案類型</param>
         public AllowedExtensions(UploadType fileType)
         {
             _extensions = fileType switch
             {
-                UploadType.Excel => new() { ".csv", ".xlsx" },
+                UploadType.Excel => [".csv", ".xlsx"],
+                UploadType.Image => [".png", ".jpg", ".jpeg"],
+                UploadType.PDF => [".pdf"],
+                UploadType.Video => [".mp4"],
                 _ => null,
             };
+        }
+
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="fileType">檔案類型</param>
+        /// <param name="sizeLimit">大小限制 MB</param>
+        public AllowedExtensions(UploadType fileType, int sizeLimit) : this(fileType)
+        {
+            _sizelimit = sizeLimit;
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -23,35 +41,49 @@ namespace Models.Attributes
             if (_extensions is null || value is null)
                 return ValidationResult.Success;
 
-            if (!IsList(value))
+            if (value is IFormFile file)
+                return Valid(file);
+            else if (value is IEnumerable<IFormFile> files)
             {
-                var file = (value as IFormFile)!;
-
-                if (!CheckFileExtension(file))
-                    return new ValidationResult(GetErrorMessage());
+                foreach (var item in files)
+                {
+                    if (!IsValid(item, out var message))
+                        return new ValidationResult(message);
+                }
 
                 return ValidationResult.Success;
             }
 
-            var files = (value as IEnumerable<IFormFile>)!;
-            foreach (var file in files)
-                if (!CheckFileExtension(file))
-                    return new ValidationResult(GetErrorMessage());
-
             return ValidationResult.Success;
         }
 
-        private bool IsList(object obj)
+        private bool IsValid(IFormFile file, out string? message)
         {
-            var type = obj.GetType();
+            if (!_extensions!.Contains(Path.GetExtension(file.FileName).ToLower()))
+            {
+                message = $"僅支援匯入 {string.Join(", ", _extensions!)} 格式";
+                return false;
+            }
 
-            return obj is IEnumerable<IFormFile>
-                && type.IsGenericType
-                && type.GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));
+            if (_sizelimit is not null && file.Length > _sizelimit * 1024 * 1024)
+            {
+                message = $"檔案大小超過限制 {_sizelimit} MB";
+                return false;
+            }
+
+            message = null;
+            return true;
         }
 
-        private bool CheckFileExtension(IFormFile file) => _extensions!.Contains(Path.GetExtension(file.FileName).ToLower());
+        private ValidationResult? Valid(IFormFile? file)
+        {
+            if (file is null)
+                return ValidationResult.Success;
 
-        private string GetErrorMessage() => $"僅支援匯入 {string.Join(", ", _extensions!)} 格式";
+            if (!IsValid(file, out var message))
+                return new ValidationResult(message);
+
+            return ValidationResult.Success;
+        }
     }
 }

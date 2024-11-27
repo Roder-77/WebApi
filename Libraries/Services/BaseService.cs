@@ -10,6 +10,7 @@ using MiniExcelLibs.OpenXml;
 using Models.DataModels;
 using Services.Extensions;
 using Services.Repositories;
+using System.Runtime.CompilerServices;
 
 namespace Services
 {
@@ -27,6 +28,8 @@ namespace Services
             _logger = serviceProvider.GetRequiredService<ILogger<BaseService>>();
             _mapper = serviceProvider.GetRequiredService<IMapper>();
         }
+
+        protected string GetCurrentMethod([CallerMemberName] string callerName = "") => callerName;
 
         /// <summary>
         /// Get file stream result

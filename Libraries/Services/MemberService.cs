@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Models.DataModels;
-using Models.Request;
+using Models.Requests;
 using Models.ViewModels;
 using static Services.Extensions.PaginationExtension;
 

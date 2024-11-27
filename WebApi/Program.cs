@@ -92,9 +92,8 @@ try
 
     app.MapControllers();
 
-    app.UseEndpoints(endpoints =>
-        endpoints.Map("/", context => Task.Run(() => context.Response.Redirect("/swagger/index.html")))
-    );
+    app.MapGet("/", () => Results.Redirect("/swagger/index.html", permanent: false))
+       .ExcludeFromDescription();
 
     app.Run();
 

@@ -31,5 +31,30 @@
         /// <returns></returns>
         public static bool HasValue(this IEnumerable<object>? items)
             => items is not null && items.Any();
+
+        /// <summary>
+        /// 加入或累加資料
+        /// </summary>
+        /// <typeparam name="T">not null</typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <param name="count"></param>
+        public static void AddOrAccumulate<T>(this Dictionary<T, int> dictionary, T key, int count = 1) where T : notnull
+        {
+            if (dictionary.ContainsKey(key))
+                dictionary[key] += count;
+            else
+                dictionary[key] = count;
+        }
+
+        /// <summary>
+        /// List 補長度
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">來源列表</param>
+        /// <param name="count">要補的數量</param>
+        /// <returns></returns>
+        public static IEnumerable<T> PadList<T>(this IEnumerable<T> source, int count) where T : class
+            => source.Concat(Enumerable.Repeat(Activator.CreateInstance<T>(), count));
     }
 }
