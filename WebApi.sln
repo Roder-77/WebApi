@@ -16,12 +16,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Libraries\Models\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Libraries\Common\Common.csproj", "{F5F39660-D1EA-4008-BA56-7F329F1C2A6A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{422CCF25-35AC-4B93-B7BB-15BC0BD18211}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{74FF960A-1B6D-4A98-B167-042F90557E75}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVC", "MVC\MVC.csproj", "{496E610E-2D6F-4F8E-AC0E-41BBE90D999E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,10 +45,10 @@ Global
 		{F5F39660-D1EA-4008-BA56-7F329F1C2A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5F39660-D1EA-4008-BA56-7F329F1C2A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5F39660-D1EA-4008-BA56-7F329F1C2A6A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{422CCF25-35AC-4B93-B7BB-15BC0BD18211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{422CCF25-35AC-4B93-B7BB-15BC0BD18211}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{422CCF25-35AC-4B93-B7BB-15BC0BD18211}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{422CCF25-35AC-4B93-B7BB-15BC0BD18211}.Release|Any CPU.Build.0 = Release|Any CPU
+		{496E610E-2D6F-4F8E-AC0E-41BBE90D999E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{496E610E-2D6F-4F8E-AC0E-41BBE90D999E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{496E610E-2D6F-4F8E-AC0E-41BBE90D999E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{496E610E-2D6F-4F8E-AC0E-41BBE90D999E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

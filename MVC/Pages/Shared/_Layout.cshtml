@@ -1,0 +1,29 @@
+﻿@{
+    var seo = ViewData["seo"] as SEOVM;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>This Demo Page title@(string.IsNullOrWhiteSpace(seo?.Name) ? string.Empty : $" - {seo.Name}")</title>
+
+    @await Html.PartialAsync("_MetaTag", null, ViewData)
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MVC.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

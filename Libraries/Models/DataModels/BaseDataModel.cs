@@ -26,9 +26,6 @@ namespace Models.DataModels
 
     public interface ISoftDeleteEntity
     {
-        /// <summary>
-        /// 是否刪除
-        /// </summary>
         public bool IsDeleted { get; set; }
     }
 }

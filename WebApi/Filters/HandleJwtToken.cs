@@ -33,7 +33,7 @@ namespace edgentauems.Filters
                 throw new UnauthorizedAccessException("Token information error");
             }
 
-            var member = _memberService.GetMember(Convert.ToInt32(memberId));
+            var member = _memberService.Get(Convert.ToInt32(memberId));
             context.HttpContext.Items.Add("Member", member);
 
             await next();

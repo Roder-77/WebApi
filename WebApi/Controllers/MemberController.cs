@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models.Attributes;
+using Models.Exceptions;
 using Models.Requests;
 using Models.Responses;
 using Models.ViewModels;
@@ -26,42 +27,9 @@ namespace WebApi.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [SwaggerSuccessResponse(typeof(Response<MemberVM>))]
-        public async Task<IActionResult> GetMember([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
-            var member = await _service.GetMember(id);
-
-            if (member == null)
-                return NotFound(Response404);
-
-            Response200.Data = member;
-
-            return Ok(Response200);
-        }
-
-        /// <summary>
-        /// 新增會員
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [SwaggerSuccessResponse()]
-        public async Task<IActionResult> InsertMember([FromBody] InsertMemberRequest request)
-        {
-            await _service.InsertMember(request);
-
-            return Ok(Response200);
-        }
-
-        /// <summary>
-        /// 更新會員
-        /// </summary>
-        /// <param name="request">請求資料</param>
-        /// <returns></returns>
-        [HttpPut]
-        [SwaggerSuccessResponse()]
-        public async Task<IActionResult> UpdateMember([FromBody] UpdateMemberRequest request)
-        {
-            await _service.UpdateMember(request);
-
+            Response200.Data = await _service.Get(id) ?? throw new NotFoundException("查無資料");
             return Ok(Response200);
         }
 
@@ -72,10 +40,23 @@ namespace WebApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [SwaggerSuccessResponse(typeof(Response<PaginationList<MemberVM>>))]
-        public async Task<IActionResult> GetMembers([FromQuery] GetMembersRequest request)
+        public async Task<IActionResult> GetList([FromQuery] GetMembersRequest request)
         {
-            Response200.Data = await _service.GetMembers(request.Page, request.PageSize);
+            Response200.Data = await _service.GetList(request.Page, request.PageSize);
+            return Ok(Response200);
+        }
 
+        /// <summary>
+        /// 取得會員選單
+        /// </summary>
+        /// <param name="id">會員代碼</param>
+        /// <param name="menuId">選單代碼</param>
+        /// <returns></returns>
+        [HttpGet("{id}/menu")]
+        [SwaggerSuccessResponse(typeof(Response<PaginationList<MemberVM>>))]
+        public async Task<IActionResult> GetMenu(int id, [FromQuery] int menuId)
+        {
+            Response200.Data = await _service.GetMenu(id, menuId);
             return Ok(Response200);
         }
     }

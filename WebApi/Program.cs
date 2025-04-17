@@ -1,10 +1,6 @@
-﻿using Common.JsonConverters;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.EntityFrameworkCore;
-using Models.DataModels;
+﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Serilog;
 using Services.Extensions;
-using System.Text.Json.Serialization;
 using WebApi.Filters;
 using WebApi.Middleware;
 using WebApi.Utils;
@@ -34,13 +30,6 @@ try
         {
             options.Conventions.Add(new RouteTokenTransformerConvention(new CamelCaseParameterTransformer()));
             options.Filters.Add(typeof(LogInvalidModelState));
-            //options.Filters.Add(typeof(HandleJwtToken));
-            options.Filters.Add(typeof(ResponseHeaderSettings));
-        })
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
         })
         .ConfigureApiBehaviorOptions(options =>
         {
@@ -52,8 +41,6 @@ try
 
     builder.Services.AddSwagger();
 
-    builder.AddJwtVerification();
-
     builder.AddDefaultCors();
 
     builder.RegisterDependency();
@@ -63,7 +50,7 @@ try
 
     var app = builder.Build();
 
-    //app.ApplyDbMigration();
+    app.UseDbMigration();
 
     if (app.Environment.IsDevelopment())
     {
@@ -86,13 +73,7 @@ try
     //app.UseHttpsRedirection();
     app.UseRouting();
 
-    app.UseStaticFiles("upload");
-
     app.UseCors();
-
-    app.UseAuthentication();
-
-    app.UseAuthorization();
 
     app.MapControllers();
 

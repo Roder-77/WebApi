@@ -6,31 +6,14 @@ namespace Models.DataModels
 {
     public class Member : BaseDataModel, ICreateEntity, IUpdateEntity
     {
-        /// <summary>
-        /// 會員名稱
-        /// </summary>
-        [Required]
         [StringLength(20)]
         public string Name { get; set; }
 
-        /// <summary>
-        /// 會員手機
-        /// </summary>
-        [Required]
-        [StringLength(10)]
+        [StringLength(20)]
         public string Mobile { get; set; }
 
-        /// <summary>
-        /// 會員信箱
-        /// </summary>
-        [Required]
         [StringLength(50)]
         public string Email { get; set; }
-
-        /// <summary>
-        /// 是否通過手機驗證
-        /// </summary>
-        public bool IsVerifyByMobile { get; set; }
 
         public long CreateTime { get; set; }
 
@@ -39,5 +22,7 @@ namespace Models.DataModels
         public long UpdateTime { get; set; }
 
         public int Updater { get; set; }
+
+        public ICollection<MemberPermission> Permissions { get; set; } = new HashSet<MemberPermission>();
     }
 }
