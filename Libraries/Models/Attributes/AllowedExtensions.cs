@@ -16,6 +16,7 @@ namespace Models.Attributes
         /// <param name="fileType">檔案類型</param>
         public AllowedExtensions(UploadType fileType)
         {
+            _sizelimit = 2;
             _extensions = fileType switch
             {
                 UploadType.Excel => [".csv", ".xlsx"],

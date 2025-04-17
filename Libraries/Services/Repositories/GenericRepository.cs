@@ -72,6 +72,13 @@ namespace Services.Repositories
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).FirstOrDefaultAsync();
 
+        public async Task<TEntity?> Get(
+            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicates.CombineByAnd(), include, order, hasTracking).FirstOrDefaultAsync();
+
         public async Task<TEntity?> GetById(
             int id,
             Expression<Func<TEntity, bool>>? predicate = null,
@@ -79,6 +86,13 @@ namespace Services.Repositories
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).FirstOrDefaultAsync(x => x.Id == id);
+        public async Task<TEntity?> GetById(
+            int id,
+            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicates.CombineByAnd(), include, order, hasTracking).FirstOrDefaultAsync(x => x.Id == id);
 
         public async Task<List<TEntity>> GetList(
             Expression<Func<TEntity, bool>>? predicate = null,
@@ -86,6 +100,13 @@ namespace Services.Repositories
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).ToListAsync();
+
+        public async Task<List<TEntity>> GetList(
+            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicates.CombineByAnd(), include, order, hasTracking).ToListAsync();
 
         public async Task<PaginationList<TEntity>> GetPaginationList(
             int page,
@@ -96,6 +117,15 @@ namespace Services.Repositories
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).ToPaginationList(page, pageSize);
 
+        public async Task<PaginationList<TEntity>> GetPaginationList(
+            int page,
+            int pageSize,
+            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicates.CombineByAnd(), include, order, hasTracking).ToPaginationList(page, pageSize);
+
         public async Task<int> Count(
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
@@ -103,6 +133,12 @@ namespace Services.Repositories
             bool hasTracking = false)
             => await Query(predicate, include, order, hasTracking).CountAsync();
 
+        public async Task<int> Count(
+            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
+            bool hasTracking = false)
+            => await Query(predicates.CombineByAnd(), include, order, hasTracking).CountAsync();
 
         public async Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true)
         {

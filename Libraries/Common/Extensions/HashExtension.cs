@@ -48,9 +48,9 @@ namespace Common.Extensions
         {
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source));
             argon2.Salt = Encoding.UTF8.GetBytes(salt);
-            argon2.DegreeOfParallelism = 16;
+            argon2.DegreeOfParallelism = 4;
             argon2.Iterations = 8;
-            argon2.MemorySize = 1024 * 128;
+            argon2.MemorySize = 1024 * 32;
 
             return Convert.ToBase64String(argon2.GetBytes(32));
         }

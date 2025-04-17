@@ -8,6 +8,38 @@ namespace Services.Extensions
     public static class EFExtension
     {
         /// <summary>
+        /// 是否有排序過
+        /// </summary>
+        /// <typeparam name="TEntity">資料實體</typeparam>
+        /// <param name="query">query</param>
+        /// <returns></returns>
+        private static bool IsExplicitlyOrdered<TEntity>(this IQueryable<TEntity> query)
+            where TEntity : BaseDataModel
+        {
+            var orderMethodNames = new HashSet<string>
+            {
+                nameof(Queryable.OrderBy),
+                nameof(Queryable.OrderByDescending),
+                nameof(Queryable.ThenBy),
+                nameof(Queryable.ThenByDescending)
+            };
+
+            var expression = query.Expression;
+            while (expression is MethodCallExpression methodCall)
+            {
+                if (methodCall.Method.DeclaringType == typeof(Queryable) &&
+                    orderMethodNames.Contains(methodCall.Method.Name))
+                {
+                    return true;
+                }
+
+                expression = methodCall.Arguments.FirstOrDefault();
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 欄位排序
         /// </summary>
         /// <typeparam name="TEntity">資料實體</typeparam>
@@ -20,8 +52,11 @@ namespace Services.Extensions
         {
             var IsSortByASC = sortType == SortType.ASC;
 
-            if (query is IOrderedQueryable<TEntity> orderedQuery)
+            if (query.IsExplicitlyOrdered())
+            {
+                var orderedQuery = (query as IOrderedQueryable<TEntity>)!;
                 return IsSortByASC ? orderedQuery.ThenBy(expression) : orderedQuery.ThenByDescending(expression);
+            }
 
             return IsSortByASC ? query.OrderBy(expression) : query.OrderByDescending(expression);
         }

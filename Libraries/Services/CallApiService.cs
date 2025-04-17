@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Models.Responses;
 using Services.Extensions;
 using System.Net.Http.Headers;
 using System.Text;
@@ -17,6 +18,8 @@ namespace Services
             _httpClientFactory = httpClientFactory;
         }
 
+        #region Utilities
+
         /// <summary>
         /// 加入基本 headers
         /// </summary>
@@ -27,18 +30,51 @@ namespace Services
             headers.Add("Authorization", "");
         }
 
+        private StringContent GenerateBody(object body)
+        {
+            var json = JsonSerializer.Serialize(body);
+            return new StringContent(json, Encoding.UTF8, "application/json");
+        }
+
+        #endregion
+
+        public async Task<(bool, TResponse?)> Get<TResponse>(string requestUri, Dictionary<string, string>? headers = null)
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Get, requestUri, null, headers);
+
+        public async Task<(bool, TResponse?)> Post<TRequest, TResponse>(string requestUri, TRequest body, Dictionary<string, string>? headers = null)
+            where TRequest : class
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Post, requestUri, GenerateBody(body), headers);
+
+        public async Task<(bool, TResponse?)> Post<TResponse>(string requestUri, IEnumerable<KeyValuePair<string, string>> formData, Dictionary<string, string>? headers = null)
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Post, requestUri, new FormUrlEncodedContent(formData), headers);
+
+        public async Task<(bool, TResponse?)> Put<TResponse>(string requestUri, object body, Dictionary<string, string>? headers = null)
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Put, requestUri, GenerateBody(body), headers);
+
+        public async Task<(bool, TResponse?)> Patch<TResponse>(string requestUri, object body, Dictionary<string, string>? headers = null)
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Patch, requestUri, GenerateBody(body), headers);
+
+        public async Task<(bool, TResponse?)> Delete<TResponse>(string requestUri, object body, Dictionary<string, string>? headers = null)
+            where TResponse : class
+            => await CallAPI<TResponse>(HttpMethod.Delete, requestUri, GenerateBody(body), headers);
+
         /// <summary>
         /// 呼叫 API
         /// </summary>
         /// <param name="httpMethod">http method</param>
         /// <param name="requestUri">request uri</param>
-        /// <param name="body">body</param>
+        /// <param name="httpContent">httpContent</param>
         /// <param name="headers">headers</param>
         /// <returns></returns>
-        public async Task<(bool, TResponse?)> CallAPI<TResponse>(HttpMethod httpMethod, string requestUri, object? body = null, Dictionary<string, string>? headers = null)
+        public async Task<(bool, TResponse?)> CallAPI<TResponse>(HttpMethod httpMethod, string requestUri, HttpContent? httpContent, Dictionary<string, string>? headers = null)
             where TResponse : class
         {
-            var requestInfo = $"request httpMethod: {httpMethod}, requestUri: {requestUri}, body: {JsonSerializer.Serialize(body)}";
+            var requestInfo = $"request httpMethod: {httpMethod}, requestUri: {requestUri}, body: {await httpContent.ReadAsStringAsync()}";
 
             try
             {
@@ -52,11 +88,8 @@ namespace Services
                         request.Headers.Add(header.Key, header.Value);
                 }
 
-                if (httpMethod.HasBody() && body != null)
-                {
-                    var json = JsonSerializer.Serialize(body);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
+                if (httpContent != null)
+                    request.Content = httpContent;
 
                 var client = _httpClientFactory.CreateClient(nameof(CallAPI));
                 var response = await client.SendAsync(request);
@@ -68,10 +101,13 @@ namespace Services
                     _logger.LogError($"{nameof(CallAPI)} fail, {requestInfo}{Environment.NewLine}{responseInfo}");
                 }
 
-                if (!string.IsNullOrWhiteSpace(content))
-                    return (response.IsSuccessStatusCode, JsonSerializer.Deserialize<TResponse>(content));
+                if (string.IsNullOrWhiteSpace(content))
+                    return (response.IsSuccessStatusCode, default);
 
-                return (response.IsSuccessStatusCode, null);
+                if (typeof(TResponse) == typeof(Response<string>))
+                    return (response.IsSuccessStatusCode, new Response<string> { Data = content } as TResponse);
+
+                return (response.IsSuccessStatusCode, JsonSerializer.Deserialize<TResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }));
             }
             catch (Exception ex)
             {

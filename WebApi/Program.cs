@@ -56,7 +56,6 @@ try
 
     builder.AddDefaultCors();
 
-    builder.Services.AddDbContext<MemoryContext>(opt => opt.UseInMemoryDatabase("MemoryDemo"));
     builder.RegisterDependency();
 
     // Serilog
@@ -66,16 +65,21 @@ try
 
     //app.ApplyDbMigration();
 
-    // Configure the HTTP request pipeline.
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    if (app.Environment.IsDevelopment())
     {
-        // Disable swagger schemas at bottom
-        options.DefaultModelsExpandDepth(-1);
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            // Disable swagger schemas at bottom
+            options.DefaultModelsExpandDepth(-1);
 
-        foreach (var description in app.DescribeApiVersions())
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
-    });
+            foreach (var description in app.DescribeApiVersions())
+                options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+        });
+
+        app.MapGet("/", () => Results.Redirect("/swagger/index.html", permanent: false))
+           .ExcludeFromDescription();
+    }
 
     app.UseMiddleware<LogApiInformation>();
 
@@ -91,9 +95,6 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
-
-    app.MapGet("/", () => Results.Redirect("/swagger/index.html", permanent: false))
-       .ExcludeFromDescription();
 
     app.Run();
 
