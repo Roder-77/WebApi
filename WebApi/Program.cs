@@ -63,7 +63,7 @@ try
 
     var app = builder.Build();
 
-    //app.ApplyDbMigration();
+    //app.UseDbMigration();
 
     if (app.Environment.IsDevelopment())
     {

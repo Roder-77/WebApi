@@ -12,7 +12,6 @@ using Services.Extensions;
 using System.Data;
 using System.Linq.Expressions;
 using System.Security.Claims;
-using static Services.Extensions.PaginationExtension;
 
 namespace Services.Repositories
 {
@@ -39,7 +38,7 @@ namespace Services.Repositories
         public DbSet<TEntity> DbSetTable => _context.Set<TEntity>();
         public IQueryable<TEntity> Table => _context.Set<TEntity>().AsNoTracking();
 
-        private IQueryable<TEntity> Query(
+        public IQueryable<TEntity> Query(
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
@@ -64,81 +63,6 @@ namespace Services.Repositories
 
             return query;
         }
-
-        public async Task<TEntity?> Get(
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicate, include, order, hasTracking).FirstOrDefaultAsync();
-
-        public async Task<TEntity?> Get(
-            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicates.CombineByAnd(), include, order, hasTracking).FirstOrDefaultAsync();
-
-        public async Task<TEntity?> GetById(
-            int id,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicate, include, order, hasTracking).FirstOrDefaultAsync(x => x.Id == id);
-        public async Task<TEntity?> GetById(
-            int id,
-            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicates.CombineByAnd(), include, order, hasTracking).FirstOrDefaultAsync(x => x.Id == id);
-
-        public async Task<List<TEntity>> GetList(
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicate, include, order, hasTracking).ToListAsync();
-
-        public async Task<List<TEntity>> GetList(
-            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicates.CombineByAnd(), include, order, hasTracking).ToListAsync();
-
-        public async Task<PaginationList<TEntity>> GetPaginationList(
-            int page,
-            int pageSize,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicate, include, order, hasTracking).ToPaginationList(page, pageSize);
-
-        public async Task<PaginationList<TEntity>> GetPaginationList(
-            int page,
-            int pageSize,
-            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicates.CombineByAnd(), include, order, hasTracking).ToPaginationList(page, pageSize);
-
-        public async Task<int> Count(
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicate, include, order, hasTracking).CountAsync();
-
-        public async Task<int> Count(
-            IEnumerable<Expression<Func<TEntity, bool>>> predicates,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? order = null,
-            bool hasTracking = false)
-            => await Query(predicates.CombineByAnd(), include, order, hasTracking).CountAsync();
 
         public async Task Insert(TEntity entity, bool saveImmediately = true, bool setCreator = true)
         {

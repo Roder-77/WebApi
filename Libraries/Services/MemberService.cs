@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.EntityFrameworkCore;
 using Models.DataModels;
 using Models.Requests;
 using Models.ViewModels;
@@ -16,11 +16,11 @@ namespace Services
         /// </summary>
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
-        public async Task<MemberVM?> GetMember(int id)
+        public async Task<MemberVM?> Get(int id)
         {
-            var member = await _repository.GetById(id);
+            var member = await _repository.Table.FirstOrDefaultAsync(x => x.Id == id);
 
-            return _mapper.Map<Member, MemberVM>(member);
+            return _mapper.Map<Member, MemberVM>(member!);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Services
         /// </summary>
         /// <param name="request">會員資料</param>
         /// <returns></returns>
-        public async Task InsertMember(InsertMemberRequest request)
+        public async Task Create(InsertMemberRequest request)
         {
             var member = _mapper.Map<InsertMemberRequest, Member>(request);
             await _repository.Insert(member);
@@ -40,10 +40,8 @@ namespace Services
         /// <param name="page">頁數</param>
         /// <param name="pageSize">數量</param>
         /// <returns></returns>
-        public async Task<PaginationList<MemberVM>> GetMembers(int page, int pageSize)
+        public async Task<PaginationList<MemberVM>> GetList(int page, int pageSize)
         {
-            var skip = (page - 1) * pageSize;
-
             var members = await _repository.Table
                 .Where(x => x.IsVerifyByMobile)
                 .ToPaginationList(page, pageSize);
@@ -56,11 +54,11 @@ namespace Services
         /// </summary>
         /// <param name="request">會員資料</param>
         /// <returns></returns>
-        public async Task UpdateMember(UpdateMemberRequest request)
+        public async Task Update(UpdateMemberRequest request)
         {
-            var member = await _repository.GetById(request.Id);
+            var member = await _repository.Table.FirstOrDefaultAsync(x => x.Id == request.Id);
 
-            if (member == null)
+            if (member is null)
                 throw new NullReferenceException();
 
             member.Name = request.Name;

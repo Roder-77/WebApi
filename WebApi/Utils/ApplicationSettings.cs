@@ -6,7 +6,7 @@ namespace WebApi.Utils
 {
     public static class ApplicationSettings
     {
-        public static void ApplyDbMigration(this WebApplication app)
+        public static void UseDbMigration(this WebApplication app)
         {
             using (var scope = app.Services.CreateScope())
             {
