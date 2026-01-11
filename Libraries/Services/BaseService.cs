@@ -11,6 +11,7 @@ using Models.DataModels;
 using Services.Extensions;
 using Services.Repositories;
 using System.Runtime.CompilerServices;
+using System.Web;
 
 namespace Services
 {
@@ -30,6 +31,19 @@ namespace Services
         }
 
         protected string GetCurrentMethod([CallerMemberName] string callerName = "") => callerName;
+
+        protected string ComposeUrl(string url, Dictionary<string, string> queries)
+        {
+            var builder = new UriBuilder(url);
+            var query = HttpUtility.ParseQueryString(builder.Query);
+
+            foreach (var item in queries)
+                query[item.Key] = item.Value;
+
+            builder.Query = query.ToString();
+
+            return builder.ToString();
+        }
 
         /// <summary>
         /// Get file stream result

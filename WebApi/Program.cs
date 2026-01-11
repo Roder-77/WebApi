@@ -1,7 +1,5 @@
 ﻿using Common.JsonConverters;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.EntityFrameworkCore;
-using Models.DataModels;
 using Serilog;
 using Services.Extensions;
 using System.Text.Json.Serialization;
@@ -11,10 +9,15 @@ using WebApi.Utils;
 
 try
 {
+    var machineName = Environment.MachineName;
     var builder = WebApplication.CreateBuilder(args);
 
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
+        .WriteTo.File(
+            path: $"logs/log_{machineName}_.txt",
+            rollingInterval: RollingInterval.Hour
+        )
         .CreateLogger();
 
     Log.Information("Starting web host");

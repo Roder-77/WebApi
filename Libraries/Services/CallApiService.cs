@@ -8,6 +8,8 @@ namespace Services
 {
     public class CallApiService
     {
+        private static string _jsonMediaType = "application/json";
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<CallApiService> _logger;
 
@@ -25,17 +27,17 @@ namespace Services
         /// <param name="headers"></param>
         private void AddDefaultHeaders(HttpRequestHeaders headers)
         {
-            headers.Add("Content-Type", "application/json");
-            headers.Add("Authorization", "");
+            headers.Accept.Add(new(_jsonMediaType));
+            //headers.Authorization = new("");
         }
 
-        private StringContent? GenerateBody(object? body)
+        private StringContent? GenerateBody(object? body, JsonSerializerOptions? jsonOptions = null)
         {
             if (body is null)
                 return null;
 
-            var json = JsonSerializer.Serialize(body);
-            return new StringContent(json, Encoding.UTF8, "application/json");
+            var json = JsonSerializer.Serialize(body, jsonOptions);
+            return new StringContent(json, Encoding.UTF8, _jsonMediaType);
         }
 
         #endregion
@@ -44,25 +46,25 @@ namespace Services
             where TResponse : class
             => await CallAPI<TResponse>(HttpMethod.Get, requestUri, null, headers);
 
-        public async Task<(bool IsSuccess, TResponse? Response)> Post<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null)
+        public async Task<(bool IsSuccess, TResponse? Response)> Post<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null, JsonSerializerOptions? jsonOptions = null)
             where TResponse : class
-            => await CallAPI<TResponse>(HttpMethod.Post, requestUri, GenerateBody(body), headers);
+            => await CallAPI<TResponse>(HttpMethod.Post, requestUri, GenerateBody(body, jsonOptions), headers);
 
         public async Task<(bool IsSuccess, TResponse? Response)> Post<TResponse>(string requestUri, IEnumerable<KeyValuePair<string, string>> formData, Dictionary<string, string>? headers = null)
             where TResponse : class
             => await CallAPI<TResponse>(HttpMethod.Post, requestUri, new FormUrlEncodedContent(formData), headers);
 
-        public async Task<(bool IsSuccess, TResponse? Response)> Put<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null)
+        public async Task<(bool IsSuccess, TResponse? Response)> Put<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null, JsonSerializerOptions? jsonOptions = null)
             where TResponse : class
-            => await CallAPI<TResponse>(HttpMethod.Put, requestUri, GenerateBody(body), headers);
+            => await CallAPI<TResponse>(HttpMethod.Put, requestUri, GenerateBody(body, jsonOptions), headers);
 
-        public async Task<(bool IsSuccess, TResponse? Response)> Patch<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null)
+        public async Task<(bool IsSuccess, TResponse? Response)> Patch<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null, JsonSerializerOptions? jsonOptions = null)
             where TResponse : class
-            => await CallAPI<TResponse>(HttpMethod.Patch, requestUri, GenerateBody(body), headers);
+            => await CallAPI<TResponse>(HttpMethod.Patch, requestUri, GenerateBody(body, jsonOptions), headers);
 
-        public async Task<(bool IsSuccess, TResponse? Response)> Delete<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null)
+        public async Task<(bool IsSuccess, TResponse? Response)> Delete<TResponse>(string requestUri, object? body = null, Dictionary<string, string>? headers = null, JsonSerializerOptions? jsonOptions = null)
             where TResponse : class
-            => await CallAPI<TResponse>(HttpMethod.Delete, requestUri, GenerateBody(body), headers);
+            => await CallAPI<TResponse>(HttpMethod.Delete, requestUri, GenerateBody(body, jsonOptions), headers);
 
         /// <summary>
         /// 呼叫 API
@@ -75,17 +77,20 @@ namespace Services
         public async Task<(bool IsSuccess, TResponse? Response)> CallAPI<TResponse>(HttpMethod httpMethod, string requestUri, HttpContent? httpContent, Dictionary<string, string>? headers = null)
             where TResponse : class
         {
+            var methodName = nameof(CallAPI);
             var body = httpContent is null ? string.Empty : await httpContent.ReadAsStringAsync();
-            var requestInfo = $"request httpMethod: {httpMethod}, requestUri: {requestUri}, body: {body}";
+            var requestInfo = $"request httpMethod: {httpMethod}, requestUri: {requestUri}, {Environment.NewLine}body: {body}";
+
+            _logger.LogInformation($"{methodName} start, {requestInfo}");
 
             try
             {
                 using var request = new HttpRequestMessage(httpMethod, requestUri);
 
+                AddDefaultHeaders(request.Headers);
+
                 if (headers != null)
                 {
-                    AddDefaultHeaders(request.Headers);
-
                     foreach (var header in headers)
                         request.Headers.Add(header.Key, header.Value);
                 }
@@ -96,12 +101,15 @@ namespace Services
                 var client = _httpClientFactory.CreateClient(nameof(CallAPI));
                 var response = await client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
+                var responseInfo = $"response status code: {(int)response.StatusCode}, content: {content}";
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var responseInfo = $"response statusCode: {(int)response.StatusCode}, content: {content}";
-                    _logger.LogError($"{nameof(CallAPI)} fail, {requestInfo}{Environment.NewLine}{responseInfo}");
+                    _logger.LogError($"{methodName} fail, response: {responseInfo}");
+                    return (response.IsSuccessStatusCode, default);
                 }
+
+                _logger.LogInformation($"{methodName} end, response: {responseInfo}");
 
                 if (string.IsNullOrWhiteSpace(content))
                     return (response.IsSuccessStatusCode, default);
@@ -113,7 +121,7 @@ namespace Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{nameof(CallAPI)} error, {requestInfo}");
+                _logger.LogError(ex, $"{methodName} error");
                 throw;
             }
         }

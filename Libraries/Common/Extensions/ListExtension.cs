@@ -1,4 +1,6 @@
-﻿namespace Common.Extensions
+﻿using Microsoft.Extensions.Primitives;
+
+namespace Common.Extensions
 {
     public static class ListExtension
     {
@@ -56,5 +58,14 @@
         /// <returns></returns>
         public static IEnumerable<T> PadList<T>(this IEnumerable<T> source, int count) where T : class
             => source.Concat(Enumerable.Repeat(Activator.CreateInstance<T>(), count));
+
+        /// <summary>
+        /// To StringValues
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static StringValues ToStringValues<T>(this IEnumerable<T> source) where T : class
+            => new([.. source.Select(x => x?.ToString() ?? "")]);
     }
 }

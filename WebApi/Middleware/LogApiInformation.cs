@@ -1,5 +1,6 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Models.Exceptions;
 using Models.Responses;
 using System.Net;
@@ -86,6 +87,12 @@ namespace WebApi.Middleware
                     _ => (int)HttpStatusCode.InternalServerError,
                 };
             }
+
+            //if (context.GetEndpoint()?.Metadata.GetMetadata<ApiControllerAttribute>() == null)
+            //{
+            //    context.Response.Redirect($"/Error?code={code}&message={message}");
+            //    return;
+            //}
 
             var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, _jsonSerializerOptions);
             

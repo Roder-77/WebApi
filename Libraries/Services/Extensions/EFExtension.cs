@@ -1,12 +1,16 @@
 ﻿using Common.Enums;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.DataModels;
 using System.Linq.Expressions;
+using System.Transactions;
 
 namespace Services.Extensions
 {
     public static class EFExtension
     {
+        #region Utilities
+
         /// <summary>
         /// 是否有排序過
         /// </summary>
@@ -17,12 +21,12 @@ namespace Services.Extensions
             where TEntity : BaseDataModel
         {
             var orderMethodNames = new HashSet<string>
-            {
-                nameof(Queryable.OrderBy),
-                nameof(Queryable.OrderByDescending),
-                nameof(Queryable.ThenBy),
-                nameof(Queryable.ThenByDescending)
-            };
+    {
+        nameof(Queryable.OrderBy),
+        nameof(Queryable.OrderByDescending),
+        nameof(Queryable.ThenBy),
+        nameof(Queryable.ThenByDescending)
+    };
 
             var expression = query.Expression;
             while (expression is MethodCallExpression methodCall)
@@ -38,6 +42,63 @@ namespace Services.Extensions
 
             return false;
         }
+
+        /// <summary>
+        /// 產生 Lambda 表達式
+        /// </summary>
+        /// <typeparam name="TEntity">資料實體</typeparam>
+        /// <param name="columnPath">欄位路徑，以點區隔</param>
+        /// <returns></returns>
+        private static Expression<Func<TEntity, object>>? GenerateLambdaExpression<TEntity>(string columnPath)
+            where TEntity : BaseDataModel
+        {
+            MemberExpression? member = null;
+            var type = typeof(TEntity);
+            // {x} =>
+            var parameter = Expression.Parameter(type);
+
+            // x.{property} or more x.{property}.{property}...
+            try
+            {
+                foreach (var part in columnPath.Split("."))
+                {
+                    if (member is null)
+                    {
+                        member = Expression.Property(parameter, part);
+                        continue;
+                    }
+
+                    member = Expression.Property(member, part);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 攔截無對應 property 的錯誤
+                if (ex is ArgumentException)
+                    return null;
+            }
+
+            // (object)x.{property}
+            var conversion = Expression.Convert(member!, typeof(object));
+
+            // x => (object)x.{property}
+            return Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
+        }
+
+        /// <summary>
+        /// 建立交易範圍
+        /// </summary>
+        /// <returns></returns>
+        private static TransactionScope CreateTransactionScope()
+        {
+            return new(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = IsolationLevel.ReadUncommitted },
+                TransactionScopeAsyncFlowOption.Enabled
+            );
+        }
+
+        #endregion
 
         /// <summary>
         /// 欄位排序
@@ -90,48 +151,6 @@ namespace Services.Extensions
         }
 
         /// <summary>
-        /// 產生 Lambda 表達式
-        /// </summary>
-        /// <typeparam name="TEntity">資料實體</typeparam>
-        /// <param name="columnPath">欄位路徑，以點區隔</param>
-        /// <returns></returns>
-        private static Expression<Func<TEntity, object>>? GenerateLambdaExpression<TEntity>(string columnPath)
-            where TEntity : BaseDataModel
-        {
-            MemberExpression? member = null;
-            var type = typeof(TEntity);
-            // {x} =>
-            var parameter = Expression.Parameter(type);
-
-            // x.{property} or more x.{property}.{property}...
-            try
-            {
-                foreach (var part in columnPath.Split("."))
-                {
-                    if (member is null)
-                    {
-                        member = Expression.Property(parameter, part);
-                        continue;
-                    }
-
-                    member = Expression.Property(member, part);
-                }
-            }
-            catch (Exception ex)
-            {
-                // 攔截無對應 property 的錯誤
-                if (ex is ArgumentException)
-                    return null;
-            }
-
-            // (object)x.{property}
-            var conversion = Expression.Convert(member!, typeof(object));
-
-            // x => (object)x.{property}
-            return Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
-        }
-
-        /// <summary>
         /// 基於 predicates 篩選資料
         /// </summary>
         /// <typeparam name="TEntity">資料實體</typeparam>
@@ -141,6 +160,56 @@ namespace Services.Extensions
         {
             var predicate = predicates.CombineByAnd();
             return predicate is null ? query : query.Where(predicate);
+        }
+
+        public static async Task<TEntity?> FirstOrDefaultWithNolock<TEntity>(this IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+            where TEntity : BaseDataModel
+        {
+            using var transaction = CreateTransactionScope();
+            var result = await query.FirstOrDefaultAsync(cancellationToken);
+            transaction.Complete();
+
+            return result;
+        }
+
+        public static async Task<TEntity?> FirstOrDefaultWithNolock<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+            where TEntity : BaseDataModel
+        {
+            using var scope = CreateTransactionScope();
+            var result = await query.FirstOrDefaultAsync(predicate, cancellationToken);
+            scope.Complete();
+
+            return result;
+        }
+
+        public static async Task<List<TEntity>> ToListWithNolock<TEntity>(this IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+            where TEntity : BaseDataModel
+        {
+            using var scope = CreateTransactionScope();
+            var results = await query.ToListAsync(cancellationToken);
+            scope.Complete();
+
+            return results;
+        }
+
+        public static async Task<bool> AnyWithNolock<TEntity>(this IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+            where TEntity : BaseDataModel
+        {
+            using var scope = CreateTransactionScope();
+            var results = await query.AnyAsync(cancellationToken);
+            scope.Complete();
+
+            return results;
+        }
+
+        public static async Task<int> CountWithNolock<TEntity>(this IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+            where TEntity : BaseDataModel
+        {
+            using var scope = CreateTransactionScope();
+            var results = await query.CountAsync(cancellationToken);
+            scope.Complete();
+
+            return results;
         }
     }
 }
