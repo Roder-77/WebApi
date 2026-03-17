@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Services.Extensions;
 
-namespace Services.JobServices
+namespace Services.Infrastructures.JobServices
 {
     public class BaseJobService
     {

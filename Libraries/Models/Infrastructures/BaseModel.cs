@@ -3,7 +3,7 @@ using Common.Extensions;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace Models
+namespace Models.Infrastructures
 {
     public class PaginationModel
     {

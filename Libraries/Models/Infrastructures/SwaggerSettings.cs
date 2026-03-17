@@ -1,6 +1,8 @@
 ﻿#nullable disable warnings
 
-namespace Models
+using Models;
+
+namespace Models.Infrastructures
 {
     public class SwaggerHeader
     {

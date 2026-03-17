@@ -13,7 +13,7 @@ using Services.Repositories;
 using System.Runtime.CompilerServices;
 using System.Web;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class BaseService
     {

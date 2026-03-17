@@ -1,7 +1,7 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc;
 using Models.Exceptions;
+using Models.Infrastructures;
 using Models.Responses;
 using System.Net;
 using System.Text.Encodings.Web;
@@ -13,7 +13,6 @@ namespace WebApi.Middleware
     {
         private readonly ILogger<LogApiInformation> _logger;
         private readonly RequestDelegate _next;
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
         private readonly HashSet<string> _sensitiveFields = new(StringComparer.OrdinalIgnoreCase){ "password", "creditCard" };
 
         public LogApiInformation(ILogger<LogApiInformation> logger, RequestDelegate next)
@@ -55,13 +54,14 @@ namespace WebApi.Middleware
                     k => k.Key,
                     v => _sensitiveFields.Contains(v.Key) ? "********" : v.Value.Count > 1 ? (object)v.Value.ToList() : v.Value.ToString()
                 );
-                
+
                 foreach (var file in form.Files)
                     formDict[file.Name] = new { file.FileName, file.Length };
 
-                body = JsonSerializer.Serialize(formDict, _jsonSerializerOptions);
+                var jsonOptions = new JsonSerializerOptions(GlobalSettings.JsonOptions) { WriteIndented = true };
+                body = JsonSerializer.Serialize(formDict, jsonOptions);
             }
-            
+
             _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
         }
 
@@ -94,8 +94,8 @@ namespace WebApi.Middleware
             //    return;
             //}
 
-            var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, _jsonSerializerOptions);
-            
+            var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, GlobalSettings.JsonOptions);
+
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
             await context.Response.WriteAsync(response);

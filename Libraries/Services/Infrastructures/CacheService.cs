@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class CacheService
     {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Models.DataModels;
 using Models.JobModels;
-using Services.JobServices;
+using Services.Infrastructures.JobServices;
 using Services.Repositories;
 using System.Collections.Concurrent;
 using System.Text.Json;

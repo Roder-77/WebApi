@@ -1,6 +1,8 @@
 ﻿#nullable disable
 
-namespace Models
+using Models;
+
+namespace Models.Infrastructures
 {
     public class Appsettings
     {

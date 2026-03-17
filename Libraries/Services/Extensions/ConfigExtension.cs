@@ -12,15 +12,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Models;
 using Models.DataModels;
+using Models.Infrastructures;
 using Models.Requests.Validators;
 using Scrutor;
 using Services.HostedServices;
-using Services.JobServices;
+using Services.Infrastructures;
+using Services.Infrastructures.JobServices;
 using Services.Repositories;
 using System.Reflection;
-using static Services.Interface.IMailService;
+using static Services.Infrastructures.Interface.IMailService;
 
 namespace Services.Extensions
 {

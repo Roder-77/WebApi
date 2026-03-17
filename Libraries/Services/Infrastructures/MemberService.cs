@@ -4,7 +4,7 @@ using Models.Requests;
 using Models.ViewModels;
 using static Services.Extensions.PaginationExtension;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class MemberService : BaseService<Member>
     {

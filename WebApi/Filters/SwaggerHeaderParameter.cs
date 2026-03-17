@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Models;
+using Microsoft.OpenApi;
 using Models.Attributes;
+using Models.Infrastructures;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Nodes;
 
 namespace WebApi.Filters
 {
@@ -22,7 +22,7 @@ namespace WebApi.Filters
             if (HasActionAttribute<AllowAnonymousAttribute>(context) || HasActionAttribute<IgnoreValidPermission>(context))
                 return;
 
-            operation.Parameters ??= new List<OpenApiParameter>();
+            operation.Parameters ??= [];
 
             foreach (var header in _headers)
                 operation.Parameters.Add(new OpenApiParameter()
@@ -30,9 +30,9 @@ namespace WebApi.Filters
                     Name = header.Name,
                     Description = header.Description,
                     In = ParameterLocation.Header,
-                    Schema = new OpenApiSchema() { Type = "String" },
+                    Schema = new OpenApiSchema() { Type = JsonSchemaType.String },
                     Required = header.Required,
-                    Example = new OpenApiString(header.Example)
+                    Example = JsonNode.Parse(header.Example)
                 });
         }
 

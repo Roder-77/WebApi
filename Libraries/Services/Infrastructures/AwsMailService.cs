@@ -3,11 +3,11 @@ using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Models;
-using Services.Interface;
+using Models.Infrastructures;
+using Services.Infrastructures.Interface;
 using System.Net;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class AwsMailService : IMailService
     {

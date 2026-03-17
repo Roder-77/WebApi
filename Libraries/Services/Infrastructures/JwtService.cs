@@ -1,12 +1,12 @@
 ﻿using Common.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Models;
+using Models.Infrastructures;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class JwtService
     {

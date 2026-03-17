@@ -13,6 +13,9 @@ namespace Services.Extensions
 
         public static Expression<Func<T, bool>>? CombineByAnd<T>(this IEnumerable<Expression<Func<T, bool>>> predicates) where T : class
         {
+            if (!predicates.Any())
+                return null;
+
             Expression<Func<T, bool>>? predicate = null;
 
             foreach (var item in predicates)
@@ -21,20 +24,24 @@ namespace Services.Extensions
             return predicate;
         }
 
-        public static Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> Append<T>(
-            this Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> left,
-            Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> right) where T : class
+        public static Action<UpdateSettersBuilder<T>> Append<T>(this Action<UpdateSettersBuilder<T>> current, Action<UpdateSettersBuilder<T>> additional)
+            where T : class
         {
-            var replace = new ReplacingExpressionVisitor(right.Parameters, new[] { left.Body });
-            var combined = replace.Visit(right.Body);
-            return Expression.Lambda<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>>(combined, left.Parameters);
+            Action<UpdateSettersBuilder<T>> setPropertyCalls = (y) =>
+            {
+                current.Invoke(y);
+                additional.Invoke(y);
+            };
+            return setPropertyCalls;
         }
 
-        public static Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>>? Combine<T>(
-            this IEnumerable<Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>>> predicates) where T : class
+        public static Action<UpdateSettersBuilder<T>>? Combine<T>(this IEnumerable<Action<UpdateSettersBuilder<T>>> predicates)
+            where T : class
         {
-            Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>>? predicate = null;
+            if (!predicates.Any())
+                return null;
 
+            Action<UpdateSettersBuilder<T>>? predicate = null;
             foreach (var item in predicates)
                 predicate = predicate is null ? item : predicate.Append(item);
 

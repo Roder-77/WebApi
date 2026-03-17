@@ -1,19 +1,19 @@
-﻿using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Models.Attritubes;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Nodes;
 
 namespace WebApi.Filters
 {
     public class SwaggerSchemaIgnoreEnum : ISchemaFilter
     {
-        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
         {
             if (!context.Type.IsEnum)
                 return;
 
-            var openApiStrings = new Lazy<List<IOpenApiAny>>();
+            var openApiStrings = new Lazy<List<JsonNode>>();
             foreach (var value in Enum.GetValues(context.Type))
             {
                 var member = context.Type.GetMember(value.ToString()!).First();

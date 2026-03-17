@@ -7,7 +7,7 @@ namespace WebApi.Filters
     {
         public override void OnResultExecuting(ResultExecutingContext context)
         {
-            context.HttpContext.Response.Headers.Add(HeaderNames.AccessControlExposeHeaders, HeaderNames.ContentDisposition);
+            context.HttpContext.Response.Headers.TryAdd(HeaderNames.AccessControlExposeHeaders, HeaderNames.ContentDisposition);
         }
     }
 }

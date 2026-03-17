@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections;
 using System.Text;
@@ -18,7 +18,7 @@ namespace WebApi.Filters
             _assemblyName = DetermineAssembly(xmlComments);
         }
 
-        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
         {
             var type = context.Type;
 
@@ -27,7 +27,7 @@ namespace WebApi.Filters
 
             if (type.Assembly.GetName().Name != _assemblyName)
                 return;
-            
+
             var sb = new StringBuilder(schema.Description);
 
             sb.AppendLine("<p>Possible values:</p>");

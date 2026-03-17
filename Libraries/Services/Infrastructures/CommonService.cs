@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Models.Exceptions;
 
-namespace Services
+namespace Services.Infrastructures
 {
     public class CommonService : BaseService
     {
