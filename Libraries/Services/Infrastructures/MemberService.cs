@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Models.DataModels;
 using Models.Requests;
 using Models.ViewModels;
@@ -20,7 +21,7 @@ namespace Services.Infrastructures
         {
             var member = await _repository.Table.FirstOrDefaultAsync(x => x.Id == id);
 
-            return _mapper.Map<Member, MemberVM>(member!);
+            return member.Adapt<MemberVM>();
         }
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace Services.Infrastructures
         /// <returns></returns>
         public async Task Create(InsertMemberRequest request)
         {
-            var member = _mapper.Map<InsertMemberRequest, Member>(request);
+            var member = request.Adapt<Member>();
             await _repository.Insert(member);
         }
 
@@ -46,7 +47,7 @@ namespace Services.Infrastructures
                 .Where(x => x.IsVerifyByMobile)
                 .ToPaginationList(page, pageSize);
 
-            return _mapper.Map<PaginationList<Member>, PaginationList<MemberVM>>(members);
+            return members.Adapt<PaginationList<MemberVM>>();
         }
 
         /// <summary>

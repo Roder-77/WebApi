@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace WebApi.Filters
+namespace Services.Filters
 {
 
     /// <summary>

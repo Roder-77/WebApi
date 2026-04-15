@@ -3,7 +3,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace WebApi.Filters
+namespace Services.Filters
 {
     public class SwaggerSchemaSortProperty : ISchemaFilter
     {

@@ -1,5 +1,6 @@
 ﻿using Common.JsonConverters;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Scalar.AspNetCore;
 using Serilog;
 using Services.Extensions;
 using System.Text.Json.Serialization;
@@ -53,7 +54,7 @@ try
 
     builder.Services.AddValidator();
 
-    builder.Services.AddSwagger();
+    builder.Services.AddScalar();
 
     builder.AddJwtVerification();
 
@@ -70,18 +71,34 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(options =>
+        app.MapOpenApi();
+        foreach (var description in app.DescribeApiVersions())
         {
-            // Disable swagger schemas at bottom
-            options.DefaultModelsExpandDepth(-1);
+            var version = description.GroupName;
+            app.MapScalarApiReference($"/scalar/{version}", options =>
+            {
+                options.Theme = ScalarTheme.DeepSpace;
+                options.Title = $"API Docs - {version}";
+                options.OpenApiRoutePattern = $"/openapi/{version}.json";
+                options.HideModels = true;
+            });
+        }
 
-            foreach (var description in app.DescribeApiVersions())
-                options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
-        });
-
-        app.MapGet("/", () => Results.Redirect("/swagger/index.html", permanent: false))
+        app.MapGet("/", () => Results.Redirect("/scalar/v1", permanent: false))
            .ExcludeFromDescription();
+
+        //app.UseSwagger();
+        //app.UseSwaggerUI(options =>
+        //{
+        //    // Disable swagger schemas at bottom
+        //    options.DefaultModelsExpandDepth(-1);
+
+        //    foreach (var description in app.DescribeApiVersions())
+        //        options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+        //});
+
+        //app.MapGet("/", () => Results.Redirect("/swagger/index.html", permanent: false))
+        //   .ExcludeFromDescription();
     }
 
     app.UseMiddleware<LogApiInformation>();

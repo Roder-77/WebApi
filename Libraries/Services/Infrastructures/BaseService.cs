@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using ICSharpCode.SharpZipLib.Zip;
+﻿using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
@@ -19,15 +18,14 @@ namespace Services.Infrastructures
     {
         protected readonly HttpContext _httpContext;
 
-        protected readonly ILogger<BaseService> _logger;
-
-        protected readonly IMapper _mapper;
+        protected readonly ILogger _logger;
 
         public BaseService(IServiceProvider serviceProvider)
         {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
             _httpContext = serviceProvider.SetDefaultHttpContext().HttpContext!;
-            _logger = serviceProvider.GetRequiredService<ILogger<BaseService>>();
-            _mapper = serviceProvider.GetRequiredService<IMapper>();
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         protected string GetCurrentMethod([CallerMemberName] string callerName = "") => callerName;

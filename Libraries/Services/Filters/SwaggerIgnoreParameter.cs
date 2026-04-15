@@ -3,7 +3,7 @@ using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
 
-namespace WebApi.Filters
+namespace Services.Filters
 {
     public class SwaggerIgnoreParameter : IOperationFilter
     {

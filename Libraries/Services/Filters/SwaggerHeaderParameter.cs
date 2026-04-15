@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using Models.Attributes;
-using Models.Infrastructures;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
-using System.Text.Json.Nodes;
 
-namespace WebApi.Filters
+namespace Services.Filters
 {
     public class SwaggerHeaderParameter : IOperationFilter
     {
-        private IEnumerable<SwaggerHeader> _headers;
+        private IEnumerable<OpenApiParameter> _headers;
 
-        public SwaggerHeaderParameter(IEnumerable<SwaggerHeader>? headers = null)
+        public SwaggerHeaderParameter(IEnumerable<OpenApiParameter>? headers = null)
         {
-            _headers = headers ?? Enumerable.Empty<SwaggerHeader>();
+            _headers = headers ?? [];
         }
 
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -25,15 +23,9 @@ namespace WebApi.Filters
             operation.Parameters ??= [];
 
             foreach (var header in _headers)
-                operation.Parameters.Add(new OpenApiParameter()
-                {
-                    Name = header.Name,
-                    Description = header.Description,
-                    In = ParameterLocation.Header,
-                    Schema = new OpenApiSchema() { Type = JsonSchemaType.String },
-                    Required = header.Required,
-                    Example = JsonNode.Parse(header.Example)
-                });
+            {
+                operation.Parameters.Add(header);
+            }
         }
 
         private bool HasActionAttribute<T>(OperationFilterContext context) where T : Attribute

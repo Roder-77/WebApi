@@ -4,7 +4,7 @@ using Models;
 
 namespace Models.Infrastructures
 {
-    public class SwaggerHeader
+    public class OpenApiHeader
     {
         public string Name { get; set; }
         public string Description { get; set; }

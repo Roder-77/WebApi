@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Models.Responses;
-using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.Net;
 using System.Runtime.Serialization;
@@ -12,19 +10,13 @@ namespace WebApi.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]s")]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, badRequest, typeof(ErrorResponse))]
-    [SwaggerResponse((int)HttpStatusCode.Unauthorized, unauthorized, typeof(ErrorResponse))]
-    [SwaggerResponse((int)HttpStatusCode.NotAcceptable, notAcceptable, typeof(ErrorResponse))]
-    [SwaggerResponse((int)HttpStatusCode.UnprocessableEntity, unprocessableEntity, typeof(ErrorResponse))]
-    [SwaggerResponse((int)HttpStatusCode.InternalServerError, internalServerError, typeof(ErrorResponse))]
+    [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.NotAcceptable)]
+    [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.UnprocessableEntity)]
+    [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public class BaseController : Controller
     {
-        private const string badRequest = "Bad Request";
-        private const string unauthorized = "Unauthorized";
-        private const string notAcceptable = "Not Acceptable";
-        private const string unprocessableEntity = "Unprocessable Entity";
-        private const string internalServerError = "Internal Server Error";
-
         protected Response<object> Response200 = new() { Code = 1, Message = "Success" };
 
         protected Response<object> Response404 = new() { Code = 0, Message = "Not Found" };

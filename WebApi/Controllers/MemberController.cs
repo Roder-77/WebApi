@@ -25,7 +25,7 @@ namespace WebApi.Controllers
         /// <param name="id">會員代碼</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [SwaggerSuccessResponse(typeof(Response<MemberVM>))]
+        [ProducesSuccessResponseType(typeof(Response<MemberVM>))]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
             var member = await _service.Get(id);
@@ -43,7 +43,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [SwaggerSuccessResponse()]
+        [ProducesSuccessResponseType]
         public async Task<IActionResult> Create([FromBody] InsertMemberRequest request)
         {
             await _service.Create(request);
@@ -57,7 +57,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpPut]
-        [SwaggerSuccessResponse()]
+        [ProducesSuccessResponseType]
         public async Task<IActionResult> Update([FromBody] UpdateMemberRequest request)
         {
             await _service.Update(request);
@@ -71,7 +71,7 @@ namespace WebApi.Controllers
         /// <param name="request">請求資料</param>
         /// <returns></returns>
         [HttpGet]
-        [SwaggerSuccessResponse(typeof(Response<PaginationList<MemberVM>>))]
+        [ProducesSuccessResponseType(typeof(Response<PaginationList<MemberVM>>))]
         public async Task<IActionResult> GetList([FromQuery] GetMembersRequest request)
         {
             Response200.Data = await _service.GetList(request.Page, request.PageSize);

@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace WebApi.Filters
+namespace Services.Filters
 {
     public class SwaggerSchemaEnumDescription : ISchemaFilter
     {
