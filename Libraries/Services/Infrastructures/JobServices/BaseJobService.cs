@@ -11,13 +11,15 @@ namespace Services.Infrastructures.JobServices
         protected readonly HttpContext _httpContext;
         protected readonly PerformContext _performContext;
 
-        protected readonly ILogger<BaseJobService> _logger;
+        protected readonly ILogger _logger;
 
         public BaseJobService(IServiceProvider serviceProvider)
         {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+            _logger = loggerFactory.CreateLogger(GetType());
             _httpContext = serviceProvider.SetDefaultHttpContext().HttpContext!;
             _performContext = serviceProvider.GetRequiredService<PerformContext>();
-            _logger = serviceProvider.GetRequiredService<ILogger<BaseJobService>>();
         }
 
     }

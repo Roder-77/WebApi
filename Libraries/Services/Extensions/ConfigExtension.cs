@@ -2,6 +2,7 @@
 using Asp.Versioning.ApiExplorer;
 using FluentValidation;
 using Hangfire;
+using Hangfire.Console;
 using Hangfire.SqlServer;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -127,6 +128,7 @@ namespace Services.Extensions
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
+                .UseConsole()
                 .UseSqlServerStorage(
                     connectionString,
                     new SqlServerStorageOptions
