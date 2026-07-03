@@ -1,6 +1,7 @@
 ﻿using Common.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Services.Infrastructures
 {
@@ -24,11 +25,13 @@ namespace Services.Infrastructures
             return JsonSerializer.Deserialize<T>(json);
         }
 
-        public async Task Set<T>(string key, T value, DistributedCacheEntryOptions? options = null)
+        public async Task Set<T>(string key, T value, Action<DistributedCacheEntryOptions>? action = null)
         {
-            options ??= new();
+            var options = new DistributedCacheEntryOptions();
+            if (action is not null)
+                action(options);
 
-            var json = JsonSerializer.Serialize(value);
+            var json = JsonSerializer.Serialize(value, new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles });
             var bytes = await GZipHelper.Zip(json);
             await _cache.SetAsync(key, bytes, options);
         }

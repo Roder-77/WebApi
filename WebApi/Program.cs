@@ -23,8 +23,6 @@ try
 
     Log.Information("Starting web host");
 
-    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
     builder.Services.AddHttpClient();
 
     builder.Services.AddConfigure();
@@ -116,7 +114,7 @@ try
 
     app.MapControllers();
 
-    app.Run();
+    await app.RunAsync();
 
     return 0;
 }
@@ -127,5 +125,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

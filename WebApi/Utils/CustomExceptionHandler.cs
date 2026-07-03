@@ -1,6 +1,7 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Diagnostics;
 using Models.Exceptions;
+using Models.Infrastructures;
 using Models.Responses;
 using System.Net;
 using System.Text.Encodings.Web;
@@ -11,6 +12,7 @@ namespace WebApi.Utils
     public class CustomExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<CustomExceptionHandler> _logger;
+
         public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
         {
             _logger = logger;
@@ -18,15 +20,14 @@ namespace WebApi.Utils
 
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, $"{nameof(TryHandleAsync)} catch");
+            _logger.LogError(exception, "{MethodName} catch", nameof(TryHandleAsync));
 
             var (statusCode, code, message) = (0, 0, string.Empty);
             object? data = null;
 
-            if (exception is CustomizeException)
+            if (exception is CustomizeException customizeEx)
             {
-                var customizeEx = (exception as CustomizeException)!;
-                (statusCode, code, message, data) = ((int)customizeEx.statusCode, (int)customizeEx.code, customizeEx.Message, customizeEx.data);
+                (statusCode, code, message, data) = customizeEx.ToTuple();
             }
             else
             {
@@ -39,9 +40,7 @@ namespace WebApi.Utils
                 };
             }
 
-            var response = JsonSerializer.Serialize(
-                new Response<object?> { Code = code, Message = message, Data = data },
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+            var response = JsonSerializer.Serialize(new Response<object?> { Code = code, Message = message, Data = data }, GlobalSettings.JsonOptions);
 
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = statusCode;

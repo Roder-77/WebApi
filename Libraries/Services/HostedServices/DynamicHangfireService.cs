@@ -48,7 +48,7 @@ namespace Services.HostedServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{nameof(DynamicHangfireService)} Fail");
+                _logger.LogError(ex, "{MethodName} Fail", nameof(DynamicHangfireService));
                 throw;
             }
         }
@@ -73,7 +73,7 @@ namespace Services.HostedServices
             {
                 if (_jobs.Contains(job))
                 {
-                    _logger.LogInformation($"Job {job.Id} is already registered and unchanged.");
+                    _logger.LogInformation("Job {JobId} is already registered and unchanged.", job.Id);
                     continue;
                 }
 
@@ -82,13 +82,13 @@ namespace Services.HostedServices
 
                 if (!job.IsEnabled)
                 {
-                    _logger.LogInformation($"Job {job.Id} is disabled and removed from the list.");
+                    _logger.LogInformation("Job {JobId} is disabled and removed from the list.", job.Id);
                     continue;
                 }
 
                 _jobs.Add(job);
                 RegisterJob(job);
-                _logger.LogInformation($"Job {job.Id} has been added or updated.");
+                _logger.LogInformation("Job {JobId} has been added or updated.", job.Id);
             }
         }
 
@@ -120,7 +120,7 @@ namespace Services.HostedServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to register job {job.Id}");
+                _logger.LogError(ex, "Failed to register job {JobId}", job.Id);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Services.HostedServices
             }
 
             // 基本型別或可直接指派
-            if (targetType.IsAssignableFrom(arg.GetType()))
+            if (targetType.IsInstanceOfType(arg))
             {
                 return arg;
             }

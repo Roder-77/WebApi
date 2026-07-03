@@ -117,8 +117,8 @@ namespace Services.Infrastructures
             {
                 var entry = new ZipEntry(item.fileName);
                 entry.DateTime = DateTime.Now;
-                zipStream.PutNextEntry(entry);
 
+                await zipStream.PutNextEntryAsync(entry);
                 await item.memoryStream.CopyToAsync(zipStream);
             }
 

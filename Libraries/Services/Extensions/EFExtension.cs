@@ -21,12 +21,12 @@ namespace Services.Extensions
             where TEntity : BaseDataModel
         {
             var orderMethodNames = new HashSet<string>
-    {
-        nameof(Queryable.OrderBy),
-        nameof(Queryable.OrderByDescending),
-        nameof(Queryable.ThenBy),
-        nameof(Queryable.ThenByDescending)
-    };
+            {
+                nameof(Queryable.OrderBy),
+                nameof(Queryable.OrderByDescending),
+                nameof(Queryable.ThenBy),
+                nameof(Queryable.ThenByDescending)
+            };
 
             var expression = query.Expression;
             while (expression is MethodCallExpression methodCall)
@@ -98,7 +98,7 @@ namespace Services.Extensions
             );
         }
 
-        #endregion
+        #endregion Utilities
 
         /// <summary>
         /// 欄位排序

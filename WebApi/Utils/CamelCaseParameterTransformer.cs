@@ -11,7 +11,7 @@ namespace WebApi.Utils
             var arr = Regex.Split(value.ToString()!, "(?<=[a-z])(?=[A-Z])");
             arr[0] = arr[0].ToLower();
 
-            return string.Join("", arr);
+            return string.Concat(arr);
         }
     }
 }

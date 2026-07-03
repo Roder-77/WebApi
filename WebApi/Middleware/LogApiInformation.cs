@@ -13,7 +13,7 @@ namespace WebApi.Middleware
     {
         private readonly ILogger<LogApiInformation> _logger;
         private readonly RequestDelegate _next;
-        private readonly HashSet<string> _sensitiveFields = new(StringComparer.OrdinalIgnoreCase){ "password", "creditCard" };
+        private readonly HashSet<string> _sensitiveFields = new(StringComparer.OrdinalIgnoreCase) { "password", "creditCard" };
 
         public LogApiInformation(ILogger<LogApiInformation> logger, RequestDelegate next)
         {
@@ -37,7 +37,7 @@ namespace WebApi.Middleware
         private async Task LogRequest(HttpContext context)
         {
             var request = context.Request;
-            var url = UriHelper.GetDisplayUrl(request);
+            var url = request.GetDisplayUrl();
             var body = string.Empty;
 
             if (!request.HasFormContentType)
@@ -62,20 +62,19 @@ namespace WebApi.Middleware
                 body = JsonSerializer.Serialize(formDict, jsonOptions);
             }
 
-            _logger.LogInformation($"HttpMethod: {request.Method}, Url: {url}, Body: {body}");
+            _logger.LogInformation("HttpMethod: {HttpMethod}, Url: {Url}, Body: {Body}", request.Method, url, body);
         }
 
         private async Task LogResponse(HttpContext context, Exception ex)
         {
-            _logger.LogError(ex, $"{nameof(LogResponse)} catch");
+            _logger.LogError(ex, "{MethodName} catch", nameof(LogResponse));
 
             var (statusCode, code, message) = (0, 0, string.Empty);
             object? data = null;
 
-            if (ex is CustomizeException)
+            if (ex is CustomizeException customizeEx)
             {
-                var customizeEx = (ex as CustomizeException)!;
-                (statusCode, code, message, data) = ((int)customizeEx.statusCode, (int)customizeEx.code, customizeEx.Message, customizeEx.data);
+                (statusCode, code, message, data) = customizeEx.ToTuple();
             }
             else
             {

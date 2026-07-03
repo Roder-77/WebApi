@@ -4,7 +4,7 @@
 
 namespace Common.Helpers
 {
-    public class HashHelper
+    public static class HashHelper
     {
         /// <summary>
         /// Generate a data hash

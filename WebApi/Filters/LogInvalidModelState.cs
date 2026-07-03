@@ -15,9 +15,9 @@ namespace WebApi.Filters
                 var logger = context.HttpContext.RequestServices.GetService<ILogger<LogInvalidModelState>>()!;
                 var errors = context.ModelState.Values.SelectMany(m => m.Errors).Select(e => e.ErrorMessage);
                 var message = string.Join(", ", errors);
-                var url = UriHelper.GetDisplayUrl(context.HttpContext.Request);
+                var url = context.HttpContext.Request.GetDisplayUrl();
 
-                logger.LogError($"HttpMethod: {context.HttpContext.Request.Method}, Url: {url}, Message: {message}");
+                logger.LogError("HttpMethod: {HttpMethod}, Url: {Url}, Message: {Message}", context.HttpContext.Request.Method, url, message);
 
                 var result = new Response<object> { Code = 0, Message = message };
                 context.Result = new ObjectResult(result) { StatusCode = (int)HttpStatusCode.BadRequest };
@@ -27,6 +27,5 @@ namespace WebApi.Filters
 
             await next();
         }
-
     }
 }

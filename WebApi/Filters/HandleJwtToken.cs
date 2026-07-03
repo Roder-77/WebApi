@@ -29,7 +29,7 @@ namespace edgentauems.Filters
 
             if (string.IsNullOrEmpty(memberId))
             {
-                _logger.LogError($"Token information error, Claims: {JsonSerializer.Serialize(context.HttpContext.User.Claims)}");
+                _logger.LogError("Token information error, Claims: {Claims}", JsonSerializer.Serialize(context.HttpContext.User.Claims, GlobalSettings.JsonOptions));
                 throw new UnauthorizedAccessException("Token information error");
             }
 
@@ -38,8 +38,5 @@ namespace edgentauems.Filters
 
             await next();
         }
-
-        private bool HasActionAttribute<T>(ActionExecutingContext context) where T : Attribute
-            => context.ActionDescriptor.EndpointMetadata.Any(x => x.GetType() == typeof(T));
     }
 }

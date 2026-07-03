@@ -13,27 +13,20 @@ namespace Common.Helpers
         /// <param name="compressionLevel">壓縮等級 0 ~ 9</param>
         public static void CompressFilesToZip(string sourcePath, string outputFilePath, IEnumerable<string>? excludePaths = null, int compressionLevel = 9)
         {
-            try
+            using var outputStream = new ZipOutputStream(File.Create(outputFilePath));
+            // 0 - store only to 9 - means best compression
+            outputStream.SetLevel(compressionLevel);
+
+            foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
             {
-                using var outputStream = new ZipOutputStream(File.Create(outputFilePath));
-                // 0 - store only to 9 - means best compression
-                outputStream.SetLevel(compressionLevel);
+                if (excludePaths?.Any(x => filePath.Contains(x)) == true)
+                    continue;
 
-                foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                {
-                    if (excludePaths != null && excludePaths.Any(x => filePath.Contains(x)))
-                        continue;
-
-                    WriteFile(outputStream, filePath);
-                }
-
-                outputStream.Finish();
-                outputStream.Close();
+                WriteFile(outputStream, filePath);
             }
-            catch
-            {
-                throw;
-            }
+
+            outputStream.Finish();
+            outputStream.Close();
         }
 
         /// <summary>
@@ -44,21 +37,14 @@ namespace Common.Helpers
         /// <param name="compressionLevel">壓縮等級 0 ~ 9</param>
         public static void CompressFileToZip(string filePath, string outputFilePath, int compressionLevel = 9)
         {
-            try
-            {
-                using var outputStream = new ZipOutputStream(File.Create(outputFilePath));
-                // 0 - store only to 9 - means best compression
-                outputStream.SetLevel(compressionLevel);
+            using var outputStream = new ZipOutputStream(File.Create(outputFilePath));
+            // 0 - store only to 9 - means best compression
+            outputStream.SetLevel(compressionLevel);
 
-                WriteFile(outputStream, filePath);
+            WriteFile(outputStream, filePath);
 
-                outputStream.Finish();
-                outputStream.Close();
-            }
-            catch
-            {
-                throw;
-            }
+            outputStream.Finish();
+            outputStream.Close();
         }
 
         /// <summary>

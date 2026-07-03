@@ -5,9 +5,9 @@ namespace Models.Exceptions
 {
     public class CustomizeException : Exception
     {
-        public HttpStatusCode statusCode;
-        public ExceptionCode code;
-        public object? data;
+        private readonly HttpStatusCode statusCode;
+        private readonly ExceptionCode code;
+        private readonly object? data;
 
         public CustomizeException(HttpStatusCode statusCode, string message) : base(message)
         {
@@ -26,6 +26,11 @@ namespace Models.Exceptions
             this.statusCode = statusCode;
             this.code = code ?? ExceptionCode.Error;
             this.data = data;
+        }
+
+        public (int statusCode, int code, string message, object? data) ToTuple()
+        {
+            return ((int)statusCode, (int)code, Message, data);
         }
     }
 }

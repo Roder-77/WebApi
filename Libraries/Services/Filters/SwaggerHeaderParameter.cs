@@ -8,7 +8,7 @@ namespace Services.Filters
 {
     public class SwaggerHeaderParameter : IOperationFilter
     {
-        private IEnumerable<OpenApiParameter> _headers;
+        private readonly IEnumerable<OpenApiParameter> _headers;
 
         public SwaggerHeaderParameter(IEnumerable<OpenApiParameter>? headers = null)
         {

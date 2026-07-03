@@ -4,6 +4,7 @@ using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -135,7 +136,7 @@ namespace Services.Repositories
 
         public async Task DeleteById(int id, bool saveImmediately = true)
         {
-            var item = DbSetTable.FirstOrDefault(x => x.Id == id);
+            var item = await DbSetTable.FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null) return;
 
@@ -161,19 +162,19 @@ namespace Services.Repositories
                 await _context.SaveChangesAsync();
         }
 
-        //public async Task ExecuteUpdateById(int? id, Action<UpdateSettersBuilder<TEntity>> setPropertyCalls)
-        //{
-        //    if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
-        //    {
-        //        var now = DateTime.Now;
-        //        setPropertyCalls = setPropertyCalls.Append(y => y.SetProperty(z => ((IUpdateEntity)z).UpdateTime, _ => now));
+        public async Task ExecuteUpdateById(int? id, Action<UpdateSettersBuilder<TEntity>> setPropertyCalls)
+        {
+            if (typeof(IUpdateEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                var now = DateTime.Now.ToTimestamp();
+                setPropertyCalls = setPropertyCalls.Append(y => y.SetProperty(z => ((IUpdateEntity)z).UpdateTime, _ => now));
 
-        //        if (typeof(IUpdaterEntity).IsAssignableFrom(typeof(TEntity)))
-        //            setPropertyCalls = setPropertyCalls.Append(y => y.SetProperty(z => ((IUpdaterEntity)z).Updater, _ => _id));
-        //    }
+                if (typeof(IUpdaterEntity).IsAssignableFrom(typeof(TEntity)))
+                    setPropertyCalls = setPropertyCalls.Append(y => y.SetProperty(z => ((IUpdaterEntity)z).Updater, _ => _id));
+            }
 
-        //    await DbSetTable.Where(x => x.Id == id).ExecuteUpdateAsync(setPropertyCalls);
-        //}
+            await DbSetTable.Where(x => x.Id == id).ExecuteUpdateAsync(setPropertyCalls);
+        }
 
         private (DbConnection connection, DbTransaction? transaction) GetDbConnectionAndTransaction()
         {

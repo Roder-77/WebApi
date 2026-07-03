@@ -11,6 +11,9 @@ namespace Services.Extensions
         public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right) where T : class
             => Expression.Lambda<Func<T, bool>>(Expression.OrElse(left.Body, Expression.Invoke(right, left.Parameters)), left.Parameters);
 
+        public static List<Expression<Func<T, bool>>> Expressions<T>(this T model) where T : class
+            => [];
+
         public static Expression<Func<T, bool>>? CombineByAnd<T>(this IEnumerable<Expression<Func<T, bool>>> predicates) where T : class
         {
             if (!predicates.Any())
@@ -27,12 +30,11 @@ namespace Services.Extensions
         public static Action<UpdateSettersBuilder<T>> Append<T>(this Action<UpdateSettersBuilder<T>> current, Action<UpdateSettersBuilder<T>> additional)
             where T : class
         {
-            Action<UpdateSettersBuilder<T>> setPropertyCalls = (y) =>
+            return (y) =>
             {
                 current.Invoke(y);
                 additional.Invoke(y);
             };
-            return setPropertyCalls;
         }
 
         public static Action<UpdateSettersBuilder<T>>? Combine<T>(this IEnumerable<Action<UpdateSettersBuilder<T>>> predicates)

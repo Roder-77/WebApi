@@ -3,13 +3,13 @@ using System.Text;
 
 namespace Common.Helpers
 {
-    public class GZipHelper
+    public static class GZipHelper
     {
         /// <summary>
         /// 壓縮
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">要壓縮的字串</param>
+        /// <returns>壓縮後的位元組陣列</returns>
         public static async Task<byte[]> Zip(string value)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
@@ -26,8 +26,8 @@ namespace Common.Helpers
         /// <summary>
         /// 解壓縮
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
+        /// <param name="bytes">要解壓縮的位元組陣列</param>
+        /// <returns>解壓縮後的字串</returns>
         public static async Task<string> Unzip(byte[]? bytes)
         {
             if (bytes == null)
