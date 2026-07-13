@@ -5,7 +5,7 @@ namespace Common.Helpers
     public class CompressHelper
     {
         /// <summary>
-        /// 多個檔案壓縮成 Zip 檔
+        /// 同目錄下多個檔案壓縮成 Zip 檔
         /// </summary>
         /// <param name="sourcePath">來源路徑</param>
         /// <param name="outputFilePath">輸出檔案路徑</param>

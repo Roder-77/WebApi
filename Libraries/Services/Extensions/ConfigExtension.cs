@@ -211,10 +211,11 @@ namespace Services.Extensions
             }
         }
 
-        public static void AddSwagger(this IServiceCollection services)
+        public static void AddSwagger<TConfigureOptions>(this IServiceCollection services)
+            where TConfigureOptions : class, IConfigureOptions<SwaggerGenOptions>
         {
             services.AddApiVersion();
-            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+            services.AddTransient(typeof(IConfigureOptions<SwaggerGenOptions>), typeof(TConfigureOptions));
 
             services.AddSwaggerGen(options =>
             {
@@ -372,7 +373,7 @@ namespace Services.Extensions
 
         #endregion
 
-        public static LoggerConfiguration SetLoggerConfiguration(bool isDevelopment, string prefix)
+        public static LoggerConfiguration SetLoggerConfiguration(bool isDevelopment, string prefix = "")
         {
             var machineName = Environment.MachineName;
             var outputTemplate = "=================================================={NewLine}{NewLine}{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}{NewLine}requestId:[{RequestId}] [{Level}]{NewLine}{SourceContext}{NewLine}{Message}{NewLine}{Exception}{NewLine}";
@@ -401,11 +402,13 @@ namespace Services.Extensions
             }
             else
             {
+                var pathPrefix = string.IsNullOrWhiteSpace(prefix) ? string.Empty : $"{prefix}/";
+
                 loggerConfiguration = loggerConfiguration
                     .MinimumLevel.Information()
                     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                     .WriteTo.File(
-                        path: $"/mnt/files/goif_logs/{prefix}/log_{machineName}_.txt",
+                        path: $"/mnt/files/logs/{pathPrefix}log_{machineName}_.txt",
                         rollingInterval: RollingInterval.Hour,
                         outputTemplate: outputTemplate
                     );

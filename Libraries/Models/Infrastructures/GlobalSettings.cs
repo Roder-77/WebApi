@@ -5,7 +5,7 @@ namespace Models.Infrastructures
 {
     public static class GlobalSettings
     {
-        public static JsonSerializerOptions JsonOptions => new()
+        public static readonly JsonSerializerOptions JsonOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,

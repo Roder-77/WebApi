@@ -13,12 +13,8 @@ try
     var machineName = Environment.MachineName;
     var builder = WebApplication.CreateBuilder(args);
 
-    Log.Logger = new LoggerConfiguration()
-        .ReadFrom.Configuration(builder.Configuration)
-        .WriteTo.File(
-            path: $"logs/log_{machineName}_.txt",
-            rollingInterval: RollingInterval.Hour
-        )
+    Log.Logger = ConfigExtension
+        .SetLoggerConfiguration(builder.Environment.IsDevelopment(), "webapi")
         .CreateLogger();
 
     Log.Information("Starting web host");

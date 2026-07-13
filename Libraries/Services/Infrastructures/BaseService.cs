@@ -20,12 +20,15 @@ namespace Services.Infrastructures
 
         protected readonly ILogger _logger;
 
+        protected readonly IServiceProvider _serviceProvider;
+
         public BaseService(IServiceProvider serviceProvider)
         {
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             _httpContext = serviceProvider.SetDefaultHttpContext().HttpContext!;
             _logger = loggerFactory.CreateLogger(GetType());
+            _serviceProvider = serviceProvider;
         }
 
         protected string GetCurrentMethod([CallerMemberName] string callerName = "") => callerName;

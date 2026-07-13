@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
 
 namespace WebApi.Utils
 {
@@ -8,10 +8,7 @@ namespace WebApi.Utils
         {
             if (value is null) return null;
 
-            var arr = Regex.Split(value.ToString()!, "(?<=[a-z])(?=[A-Z])");
-            arr[0] = arr[0].ToLower();
-
-            return string.Concat(arr);
+            return JsonNamingPolicy.CamelCase.ConvertName(value.ToString()!);
         }
     }
 }

@@ -48,15 +48,15 @@ namespace Models.Infrastructures
             return this with { CurrentStepExpirTime = now.Value.AddMinutes(expiryMinutes) };
         }
 
-        public bool IsValid(string channelId, string orderId, int amount, string plate)
+        public bool IsValid(string orderId, int amount)
         {
             return OrderId == orderId
                 && Amount == amount;
         }
 
-        public bool IsValid(string channelId, int orderId, int amount, string plate)
+        public bool IsValid(int orderId, int amount)
         {
-            return IsValid(channelId, orderId.ToString(), amount, plate);
+            return IsValid(orderId.ToString(), amount);
         }
 
         public bool IsExpired()

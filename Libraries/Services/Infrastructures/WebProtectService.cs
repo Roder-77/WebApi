@@ -81,13 +81,13 @@ namespace PH_GOIF.Services.WebProtect
             }
         }
 
-        public WebProtectModel? RenewToken(string token, string channelId, string orderId, int amount, string plate, int expiryMinutes = 5)
+        public WebProtectModel? RenewToken(string token, string orderId, int amount, int expiryMinutes = 5)
         {
             var model = DecryptToken(token);
             if (model is null)
                 return null;
 
-            if (!model.IsValid(channelId, orderId, amount, plate))
+            if (!model.IsValid(orderId, amount))
                 return null;
 
             if (DateTime.Now > model.ExpireTime)
@@ -96,13 +96,13 @@ namespace PH_GOIF.Services.WebProtect
             return model.Renew(DateTime.Now, expiryMinutes);
         }
 
-        public bool ValidateToken(string token, string channelId, string orderId, int amount, string plate)
+        public bool ValidateToken(string token, string orderId, int amount)
         {
             var model = DecryptToken(token);
             if (model is null)
                 return false;
 
-            if (!model.IsValid(channelId, orderId, amount, plate))
+            if (!model.IsValid(orderId, amount))
                 return false;
 
             if (model.IsExpired())
